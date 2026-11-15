@@ -49,6 +49,9 @@ import androidx.compose.ui.text.style.TextAlign
 import com.chani.porumi.ui.components.IconBubble
 import androidx.compose.material.icons.rounded.ChatBubbleOutline
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.shadow
 
 @Composable
 fun MyScreen(
@@ -230,14 +233,15 @@ private fun FriendsCard(
 @Composable
 private fun FeedbackBanner(modifier: Modifier = Modifier) {
     val uriHandler = LocalUriHandler.current
-    val colors = MaterialTheme.colorScheme
     val shape = RoundedCornerShape(24.dp)
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .fillMaxWidth()
+            .shadow(12.dp, shape, ambientColor = LocalPorumiColors.current.cardShadow, spotColor = LocalPorumiColors.current.cardShadow)
             .clip(shape)
-            .background(colors.primaryContainer)
+            // 앱 아이콘과 같은 복숭아 그라데이션: 크림 배경·흰 카드 사이에서 눈에 띄게
+            .background(Brush.linearGradient(listOf(Color(0xFFFFB596), Color(0xFFF2754C))))
             .clickable {
                 runCatching {
                     uriHandler.openUri("mailto:${AppInfo.SUPPORT_EMAIL}?subject=%5BPorumi%5D%20%EC%9D%98%EA%B2%AC%20%28v${AppInfo.VERSION}%29")
@@ -245,19 +249,24 @@ private fun FeedbackBanner(modifier: Modifier = Modifier) {
             }
             .padding(16.dp),
     ) {
-        IconBubble(Icons.Rounded.ChatBubbleOutline, size = 44.dp, background = colors.surfaceContainer)
+        IconBubble(
+            Icons.Rounded.ChatBubbleOutline,
+            size = 44.dp,
+            background = Color.White.copy(alpha = 0.25f),
+            tint = Color.White,
+        )
         Column(Modifier.weight(1f).padding(horizontal = 14.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text("포루미에게 한마디", style = MaterialTheme.typography.titleMedium, color = colors.onPrimaryContainer)
+            Text("포루미에게 한마디", style = MaterialTheme.typography.titleMedium, color = Color.White)
             Text(
                 "더 좋은 앱이 되도록 의견을 들려주세요",
                 style = MaterialTheme.typography.bodySmall,
-                color = colors.onPrimaryContainer.copy(alpha = 0.75f),
+                color = Color.White.copy(alpha = 0.9f),
             )
         }
         Icon(
             Icons.AutoMirrored.Rounded.ArrowForwardIos,
             contentDescription = "의견 보내기",
-            tint = colors.onPrimaryContainer.copy(alpha = 0.5f),
+            tint = Color.White.copy(alpha = 0.8f),
             modifier = Modifier.size(14.dp),
         )
     }
