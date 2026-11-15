@@ -59,6 +59,14 @@ class AuthRepository internal constructor(private val supabase: SupabaseClient) 
         return supabase.auth.currentSessionOrNull() != null
     }
 
+    /**
+     * SNS 로그인: 로그인 화면(브라우저/Custom Tabs)을 띄우고 바로 반환한다.
+     * 세션은 딥링크로 돌아온 뒤 handleAuthDeeplink 에서 만들어지고 authState 로 전달된다.
+     */
+    suspend fun signInWithSocial(social: SocialLogin) {
+        supabase.auth.signInWith(social.provider)
+    }
+
     suspend fun signOut() = supabase.auth.signOut()
 
     suspend fun changePassword(newPassword: String) {

@@ -14,11 +14,23 @@
         <activity
             android:exported="true"
             android:name=".MainActivity"
+            android:launchMode="singleTask"
             android:theme="@style/Theme.Porumi.Starting">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <!-- SNS 로그인 후 돌아오는 딥링크: porumi://login-callback -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="login-callback"
+                    android:scheme="porumi" />
             </intent-filter>
         </activity>
     </application>

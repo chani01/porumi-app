@@ -49,6 +49,13 @@ The emotion set (`HAPPY, RELAXED, EXCITED, CURIOUS, SLEEPY, ANXIOUS, ANNOYED`) i
 - `supabase/migrations/` — `pets`, `analyses` tables with owner-only RLS policies, and the private `pet-photos` bucket whose policies require the first path segment to equal `auth.uid()`. Storage paths must keep the `{uid}/...` prefix.
 - `delete-account` function verifies the user token, then uses the service-role key (server-side only) to delete the user's Storage folder and the auth user; `pets`/`analyses` go via `ON DELETE CASCADE`.
 - Both functions set `verify_jwt = false` in `supabase/config.toml` and verify the token themselves with `auth.getUser`. Function dependencies are pinned in each function's `deno.json`.
+- `naver-userinfo` is the `userinfo_url` of the custom OAuth provider `custom:naver`: it is called by Supabase Auth with a Naver access token (hence `verify_jwt = false`, no `auth.getUser`) and flattens Naver's `{ response: {...} }` profile into OIDC claims.
+
+### Sign-in
+
+- Kakao / Naver / Apple / Google via `AuthRepository.signInWithSocial` (`data/SocialLogin.kt`); email+password stays as a secondary "이메일로 계속하기" path (also used for App Store review accounts).
+- OAuth uses PKCE and returns through the deep link `porumi://login-callback` (`AUTH_SCHEME`/`AUTH_HOST`). Android handles it in `MainActivity` (`singleTask`, `onNewIntent`) and iOS in `ContentView.swift` `onOpenURL`, both calling `handleAuthDeeplink`. Keep the scheme in sync across `SocialLogin.kt`, `AndroidManifest.xml`, `Info.plist` and the Supabase Redirect URLs.
+- Console/provider setup steps: `docs/social-login-setup.md`.
 
 ## Commit convention
 

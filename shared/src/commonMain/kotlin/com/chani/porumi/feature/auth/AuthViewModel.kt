@@ -8,19 +8,28 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.chani.porumi.data.SocialLogin
 
 data class AuthUiState(
     val email: String = "",
     val password: String = "",
+    /** 회원가입 시 비밀번호 확인 */
+    val passwordConfirm: String = "",
     val isSignUp: Boolean = false,
     /** 회원가입 시 이용약관·개인정보 처리방침 필수 동의 */
     val agreedToTerms: Boolean = false,
     val loading: Boolean = false,
+    /** 진행 중인 SNS 로그인 (해당 버튼에 로딩 표시) */
+    val socialLoading: SocialLogin? = null,
+    /** "이메일로 계속하기"를 눌러 이메일 입력 화면을 보는 중 */
+    val showEmail: Boolean = false,
     val error: String? = null,
     val info: String? = null,
 ) {
+    val passwordMismatch: Boolean get() = isSignUp && passwordConfirm.isNotEmpty() && passwordConfirm != password
+
     val canSubmit: Boolean get() = email.contains("@") && password.length >= 6 && !loading &&
-        (!isSignUp || agreedToTerms)
+        (!isSignUp || (agreedToTerms && passwordConfirm == password))
 }
 
 class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
@@ -30,8 +39,26 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
 
     fun onEmailChange(v: String) = _state.update { it.copy(email = v.trim(), error = null) }
     fun onPasswordChange(v: String) = _state.update { it.copy(password = v, error = null) }
+    fun onPasswordConfirmChange(v: String) = _state.update { it.copy(passwordConfirm = v, error = null) }
     fun onAgreeChange(v: Boolean) = _state.update { it.copy(agreedToTerms = v) }
-    fun toggleMode() = _state.update { it.copy(isSignUp = !it.isSignUp, error = null, info = null) }
+    fun setSignUp(signUp: Boolean) = _state.update {
+        if (it.isSignUp == signUp) it else it.copy(isSignUp = signUp, passwordConfirm = "", error = null, info = null)
+    }
+    fun showEmail(show: Boolean) = _state.update { it.copy(showEmail = show, error = null, info = null) }
+
+    fun signInWithSocial(social: SocialLogin) {
+        if (_state.value.socialLoading != null) return
+        _state.update { it.copy(socialLoading = social, error = null, info = null) }
+        viewModelScope.launch {
+            try {
+                authRepository.signInWithSocial(social)
+            } catch (e: Exception) {
+                _state.update { it.copy(error = "${social.label.removeSuffix("로 시작하기")} 로그인을 시작하지 못했어요. 잠시 후 다시 시도해 주세요.") }
+            } finally {
+                _state.update { it.copy(socialLoading = null) }
+            }
+        }
+    }
 
     fun submit() {
         val s = _state.value

@@ -14,5 +14,9 @@ struct ContentView: View {
     var body: some View {
         ComposeView()
             .ignoresSafeArea()
+            // SNS 로그인 후 돌아오는 딥링크(porumi://login-callback)를 세션으로 바꾼다
+            .onOpenURL { url in
+                SocialLogin_iosKt.handleAuthDeeplink(url: url)
+            }
     }
 }
