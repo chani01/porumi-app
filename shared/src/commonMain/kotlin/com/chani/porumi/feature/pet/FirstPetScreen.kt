@@ -29,6 +29,12 @@ import com.chani.porumi.ui.components.BirthDateField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Pets
 import com.chani.porumi.ui.components.IconBubble
+import com.chani.porumi.ui.components.AdaptiveWidth
+import com.chani.porumi.ui.components.centeredMaxWidth
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
 /** 아이가 한 마리도 없을 때 보여주는 첫 등록 화면 */
 @Composable
@@ -39,8 +45,15 @@ fun FirstPetScreen(viewModel: PetsViewModel = koinViewModel()) {
     var birthDate by remember { mutableStateOf<LocalDate?>(null) }
     val error by viewModel.error.collectAsStateWithLifecycle()
 
+    // 높으면 가운데, 낮으면(가로 모드·접힌 폴더블) 스크롤
+    BoxWithConstraints(Modifier.fillMaxSize().safeDrawingPadding()) {
+    val screenHeight = maxHeight
     Column(
-        modifier = Modifier.fillMaxSize().safeDrawingPadding().padding(24.dp),
+        modifier = Modifier
+            .centeredMaxWidth(AdaptiveWidth.Form)
+            .verticalScroll(rememberScrollState())
+            .heightIn(min = screenHeight)
+            .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
     ) {
         IconBubble(Icons.Rounded.Pets, size = 88.dp)
@@ -74,5 +87,6 @@ fun FirstPetScreen(viewModel: PetsViewModel = koinViewModel()) {
             enabled = name.isNotBlank(),
             modifier = Modifier.fillMaxWidth(),
         ) { Text("시작하기") }
+    }
     }
 }

@@ -72,6 +72,8 @@ import io.github.jan.supabase.storage.StorageItem
 import kotlinx.serialization.Serializable
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import com.chani.porumi.ui.components.AdaptiveWidth
+import com.chani.porumi.ui.components.centeredMaxSize
 
 @Serializable data object HomeRoute
 @Serializable data object ReportRoute
@@ -183,7 +185,8 @@ private fun MainScaffold() {
             navController = navController,
             startDestination = HomeRoute,
             // 상태바 인셋은 여기서 소비 → 하위 화면의 내비게이션 바가 중복으로 띄우지 않음
-            modifier = Modifier.padding(padding).consumeWindowInsets(padding),
+            // 폴더블 펼침·태블릿·가로 모드: 내용 폭을 제한하고 가운데 정렬 (모든 하위 화면에 적용)
+            modifier = Modifier.padding(padding).consumeWindowInsets(padding).centeredMaxSize(AdaptiveWidth.Content),
         ) {
             composable<HomeRoute> {
                 HomeScreen(

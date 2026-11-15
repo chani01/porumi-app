@@ -80,6 +80,8 @@ import com.chani.porumi.ui.theme.LocalPorumiColors
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
 /** 구분선 두께 (1px 에 가깝게) */
 val Hairline = 0.5.dp
@@ -293,7 +295,7 @@ fun PorumiTabBar(items: List<TabItem>, selectedIndex: Int, onSelect: (Int) -> Un
     ) {
         Row(
             Modifier
-                .fillMaxWidth()
+                .centeredMaxWidth(AdaptiveWidth.TabBar)
                 .height(64.dp)
                 .shadow(16.dp, RoundedCornerShape(32.dp), ambientColor = extra.cardShadow, spotColor = extra.cardShadow)
                 .background(extra.barBackground, RoundedCornerShape(32.dp))
@@ -617,6 +619,8 @@ fun PorumiAlertDialog(
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(28.dp))
                 .background(extra.alertBackground)
+                // 화면이 낮으면(가로 모드·키보드) 내용이 넘치지 않게 스크롤
+                .verticalScroll(rememberScrollState())
                 .padding(start = 20.dp, end = 20.dp, top = 26.dp, bottom = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(6.dp),
