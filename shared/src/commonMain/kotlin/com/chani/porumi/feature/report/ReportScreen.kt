@@ -24,7 +24,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -51,6 +50,10 @@ import kotlinx.datetime.plus
 import org.koin.compose.viewmodel.koinViewModel
 import kotlin.math.abs
 import kotlin.math.roundToInt
+import com.chani.porumi.ui.components.Hairline
+import com.chani.porumi.ui.components.LargeTitle
+import com.chani.porumi.ui.components.PlainButton
+import com.chani.porumi.ui.theme.LocalIosColors
 
 @Composable
 fun ReportScreen(
@@ -65,12 +68,7 @@ fun ReportScreen(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Text(
-            "무드 리포트",
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(horizontal = 16.dp),
-        )
+        LargeTitle("무드 리포트", Modifier.padding(horizontal = 16.dp))
         PetProfileHeader(
             pets = state.pets,
             selected = state.selectedPet,
@@ -95,7 +93,7 @@ private fun PeriodNavigator(mood: WeeklyMood, periodsAgo: Int, onPrev: () -> Uni
     val end = mood.weekStart.plus(DatePeriod(days = 6))
     val isRecent = periodsAgo == 0
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-        TextButton(onClick = onPrev) {
+        PlainButton(onClick = onPrev, textStyle = MaterialTheme.typography.bodyMedium) {
             Icon(Icons.Rounded.ChevronLeft, contentDescription = null)
             Text("이전 7일")
         }
@@ -106,7 +104,7 @@ private fun PeriodNavigator(mood: WeeklyMood, periodsAgo: Int, onPrev: () -> Uni
             modifier = Modifier.weight(1f),
             textAlign = androidx.compose.ui.text.style.TextAlign.Center,
         )
-        TextButton(onClick = onNext, enabled = !isRecent) {
+        PlainButton(onClick = onNext, enabled = !isRecent, textStyle = MaterialTheme.typography.bodyMedium) {
             Text("다음 7일")
             Icon(Icons.Rounded.ChevronRight, contentDescription = null)
         }
@@ -122,7 +120,7 @@ private fun SummaryCard(mood: WeeklyMood, comment: String) {
                 Text(level?.emoji ?: "🫥", fontSize = 40.sp)
                 Spacer(Modifier.width(12.dp))
                 Column {
-                    Text(level?.label ?: "기록 없음", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    Text(level?.label ?: "기록 없음", style = MaterialTheme.typography.titleLarge)
                     val avg = mood.averageScore
                     if (avg != null) {
                         val prev = mood.previousAverageScore
@@ -152,7 +150,7 @@ private fun DailyMoodChart(mood: WeeklyMood) {
 
     ClickableCard(onClick = null) {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("요일별 기분", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+            Text("요일별 기분", style = MaterialTheme.typography.titleMedium)
             Text(
                 selected?.let { d ->
                     if (d.score == null) "${d.date.monthDay()} (${d.date.dayOfWeek.korean}) · 기록 없음"
@@ -231,7 +229,7 @@ private fun DistributionCard(mood: WeeklyMood) {
     val max = mood.distribution.values.max().toFloat()
     ClickableCard(onClick = null) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text("자주 지은 표정", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+            Text("자주 지은 표정", style = MaterialTheme.typography.titleMedium)
             mood.distribution.entries.sortedByDescending { it.value }.forEach { (emotion, count) ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("${emotion.emoji} ${emotion.label}", modifier = Modifier.width(96.dp), style = MaterialTheme.typography.bodyMedium)
@@ -259,7 +257,7 @@ private fun HighlightsCard(mood: WeeklyMood, onPhotoClick: (String) -> Unit) {
     val happiest = mood.happiest ?: return
     ClickableCard(onClick = null) {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("이 기간 하이라이트", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+            Text("이 기간 하이라이트", style = MaterialTheme.typography.titleMedium)
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Highlight("가장 행복했던 순간", happiest, onPhotoClick, Modifier.weight(1f))
                 val toughest = mood.toughest
@@ -269,7 +267,7 @@ private fun HighlightsCard(mood: WeeklyMood, onPhotoClick: (String) -> Unit) {
                     Spacer(Modifier.weight(1f))
                 }
             }
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            HorizontalDivider(thickness = Hairline, color = LocalIosColors.current.separator)
             Text(
                 "표정 분석은 참고용이에요. 평소와 다른 모습이 계속되면 수의사와 상담해 주세요.",
                 style = MaterialTheme.typography.labelSmall,

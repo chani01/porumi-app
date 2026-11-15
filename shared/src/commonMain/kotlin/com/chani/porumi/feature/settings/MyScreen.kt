@@ -15,7 +15,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
-import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Info
@@ -36,6 +35,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.chani.porumi.feature.legal.LegalDoc
 import com.chani.porumi.ui.components.ClickableCard
 import org.koin.compose.viewmodel.koinViewModel
+import androidx.compose.material.icons.automirrored.rounded.ArrowForwardIos
+import com.chani.porumi.ui.components.LargeTitle
+import com.chani.porumi.ui.theme.LocalIosColors
+import com.chani.porumi.ui.theme.SystemColors
 
 @Composable
 fun MyScreen(
@@ -49,12 +52,7 @@ fun MyScreen(
 ) {
     val pets by viewModel.pets.collectAsStateWithLifecycle()
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(vertical = 16.dp)) {
-        Text(
-            "마이",
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(horizontal = 16.dp),
-        )
+        LargeTitle("마이", Modifier.padding(horizontal = 16.dp))
         Spacer(Modifier.height(12.dp))
 
         // 계정 카드
@@ -67,30 +65,31 @@ fun MyScreen(
                     Icon(Icons.Rounded.Person, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                 }
                 Column(Modifier.weight(1f).padding(start = 14.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text(viewModel.email ?: "내 계정", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                    Text(viewModel.email ?: "내 계정", style = MaterialTheme.typography.titleMedium)
                     Text("내 계정 설정", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Icon(
-                    Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+                    Icons.AutoMirrored.Rounded.ArrowForwardIos,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    tint = LocalIosColors.current.tertiaryLabel,
+                    modifier = Modifier.size(14.dp),
                 )
             }
         }
 
         Spacer(Modifier.height(8.dp))
         SettingsSection("반려동물") {
-            SettingsRow("반려동물 관리", Icons.Outlined.Pets, onPets, trailingText = "${pets.size}명")
+            SettingsRow("반려동물 관리", Icons.Outlined.Pets, onPets, trailingText = "${pets.size}명", iconColor = SystemColors.Orange)
         }
         SettingsSection("앱 설정") {
-            SettingsRow("알림 설정", Icons.Outlined.Notifications, onNotifications)
+            SettingsRow("알림 설정", Icons.Outlined.Notifications, onNotifications, iconColor = SystemColors.Red)
         }
         SettingsSection("지원") {
-            SettingsRow("고객센터", Icons.AutoMirrored.Outlined.HelpOutline, onSupport)
-            SettingsRow(LegalDoc.TERMS.title, Icons.Outlined.Description, { onOpenLegal(LegalDoc.TERMS) })
-            SettingsRow(LegalDoc.PRIVACY.title, Icons.Outlined.PrivacyTip, { onOpenLegal(LegalDoc.PRIVACY) })
-            SettingsRow("오픈소스 라이선스", Icons.Outlined.Code, onLicenses)
-            SettingsRow("앱 버전", Icons.Outlined.Info, onClick = null, trailingText = AppInfo.VERSION)
+            SettingsRow("고객센터", Icons.AutoMirrored.Outlined.HelpOutline, onSupport, iconColor = SystemColors.Blue)
+            SettingsRow(LegalDoc.TERMS.title, Icons.Outlined.Description, { onOpenLegal(LegalDoc.TERMS) }, iconColor = SystemColors.Gray)
+            SettingsRow(LegalDoc.PRIVACY.title, Icons.Outlined.PrivacyTip, { onOpenLegal(LegalDoc.PRIVACY) }, iconColor = SystemColors.Indigo)
+            SettingsRow("오픈소스 라이선스", Icons.Outlined.Code, onLicenses, iconColor = SystemColors.Gray)
+            SettingsRow("앱 버전", Icons.Outlined.Info, onClick = null, trailingText = AppInfo.VERSION, iconColor = SystemColors.Gray)
         }
     }
 
