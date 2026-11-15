@@ -53,7 +53,7 @@ import kotlin.math.roundToInt
 import com.chani.porumi.ui.components.Hairline
 import com.chani.porumi.ui.components.LargeTitle
 import com.chani.porumi.ui.components.PlainButton
-import com.chani.porumi.ui.theme.LocalIosColors
+import com.chani.porumi.ui.theme.LocalPorumiColors
 
 @Composable
 fun ReportScreen(
@@ -267,7 +267,7 @@ private fun HighlightsCard(mood: WeeklyMood, onPhotoClick: (String) -> Unit) {
                     Spacer(Modifier.weight(1f))
                 }
             }
-            HorizontalDivider(thickness = Hairline, color = LocalIosColors.current.separator)
+            HorizontalDivider(thickness = Hairline, color = LocalPorumiColors.current.separator)
             Text(
                 "표정 분석은 참고용이에요. 평소와 다른 모습이 계속되면 수의사와 상담해 주세요.",
                 style = MaterialTheme.typography.labelSmall,
@@ -280,7 +280,7 @@ private fun HighlightsCard(mood: WeeklyMood, onPhotoClick: (String) -> Unit) {
 @Composable
 private fun Highlight(title: String, analysis: Analysis, onClick: (String) -> Unit, modifier: Modifier) {
     Column(modifier.clickable { onClick(analysis.id) }, verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        PetPhoto(analysis.imagePath, Modifier.fillMaxWidth().aspectRatio(1f).clip(RoundedCornerShape(12.dp)))
+        PetPhoto(analysis.imagePath, Modifier.fillMaxWidth().aspectRatio(1f).clip(RoundedCornerShape(16.dp)))
         Text(title, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Text("${analysis.primaryEmotion.emoji} ${analysis.primaryEmotion.label}", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
     }

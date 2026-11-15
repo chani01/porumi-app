@@ -22,5 +22,6 @@ val openSourceLicenses = listOf(
     OpenSourceLicense("Koin", "Kotzilla / Arnaud Giuliani", "Apache License 2.0", "https://github.com/InsertKoinIO/koin"),
     OpenSourceLicense("Coil", "Coil Contributors", "Apache License 2.0", "https://github.com/coil-kt/coil"),
     OpenSourceLicense("FileKit", "Vincent Guillebaud", "MIT License", "https://github.com/vinceglb/FileKit"),
+    OpenSourceLicense("Pretendard (글꼴)", "Kil Hyung-jin", "SIL Open Font License 1.1", "https://github.com/orioncactus/pretendard"),
     OpenSourceLicense("Multiplatform Settings", "Russell Wolf", "Apache License 2.0", "https://github.com/russhwolf/multiplatform-settings"),
 )

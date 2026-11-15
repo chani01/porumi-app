@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.chani.porumi.domain.Species
 import org.koin.compose.viewmodel.koinViewModel
-import com.chani.porumi.ui.components.IosTextField
+import com.chani.porumi.ui.components.PorumiTextField
 import com.chani.porumi.ui.components.PrimaryButton
 import com.chani.porumi.ui.components.SegmentedControl
 
@@ -48,7 +48,7 @@ fun FirstPetScreen(viewModel: PetsViewModel = koinViewModel()) {
             selectedIndex = Species.entries.indexOf(species),
             onSelect = { species = Species.entries[it] },
         )
-        IosTextField(
+        PorumiTextField(
             value = name,
             onValueChange = { if (it.length <= 30) name = it },
             placeholder = "이름",

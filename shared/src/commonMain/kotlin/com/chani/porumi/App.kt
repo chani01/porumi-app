@@ -60,7 +60,7 @@ import com.chani.porumi.feature.settings.MyScreen
 import com.chani.porumi.feature.settings.NotificationSettingsScreen
 import com.chani.porumi.feature.settings.SupportScreen
 import com.chani.porumi.feature.report.ReportScreen
-import com.chani.porumi.ui.components.IosTabBar
+import com.chani.porumi.ui.components.PorumiTabBar
 import com.chani.porumi.ui.components.PrimaryButton
 import com.chani.porumi.ui.components.TabItem
 import com.chani.porumi.ui.theme.PorumiTheme
@@ -149,7 +149,7 @@ private fun RootContent(state: AppState?, onRetry: () -> Unit) {
 
 private data class Tab(val item: TabItem, val route: Any)
 
-// iOS 탭바는 선택 여부와 관계없이 채워진 아이콘을 쓰고 색으로만 구분한다
+// 탭 아이콘은 둥근 채움 아이콘, 선택 여부는 색과 말랑한 배경으로 구분
 private val tabs = listOf(
     Tab(TabItem("홈", Icons.Rounded.Home), HomeRoute),
     Tab(TabItem("리포트", Icons.Rounded.Insights), ReportRoute),
@@ -169,7 +169,7 @@ private fun MainScaffold() {
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
             if (selectedTab >= 0) {
-                IosTabBar(
+                PorumiTabBar(
                     items = tabs.map { it.item },
                     selectedIndex = selectedTab,
                     onSelect = { navController.navigateTab(tabs[it].route) },

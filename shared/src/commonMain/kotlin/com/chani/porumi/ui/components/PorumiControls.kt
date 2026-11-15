@@ -76,17 +76,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.chani.porumi.ui.theme.LocalIosColors
+import com.chani.porumi.ui.theme.LocalPorumiColors
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.foundation.layout.widthIn
 
-/** iOS 구분선 두께 (1px 에 가깝게) */
+/** 구분선 두께 (1px 에 가깝게) */
 val Hairline = 0.5.dp
 
 private const val PRESSED_ALPHA = 0.4f
 
 // ── 버튼 ──────────────────────────────
 
-/** 채워진 강조 버튼 (UIButton.Configuration.filled, large) */
+/** 채워진 캡슐 강조 버튼 */
 @Composable
 fun PrimaryButton(
     onClick: () -> Unit,
@@ -95,7 +97,7 @@ fun PrimaryButton(
     content: @Composable RowScope.() -> Unit,
 ) {
     val colors = MaterialTheme.colorScheme
-    val ios = LocalIosColors.current
+    val ios = LocalPorumiColors.current
     FilledButton(
         onClick = onClick,
         modifier = modifier,
@@ -107,7 +109,7 @@ fun PrimaryButton(
     )
 }
 
-/** 옅게 물든 보조 버튼 (UIButton.Configuration.tinted) */
+/** 옅게 물든 캡슐 보조 버튼 */
 @Composable
 fun TintedButton(
     onClick: () -> Unit,
@@ -116,7 +118,7 @@ fun TintedButton(
     content: @Composable RowScope.() -> Unit,
 ) {
     val colors = MaterialTheme.colorScheme
-    val ios = LocalIosColors.current
+    val ios = LocalPorumiColors.current
     FilledButton(
         onClick = onClick,
         modifier = modifier,
@@ -144,9 +146,9 @@ private fun FilledButton(
         ProvideTextStyle(MaterialTheme.typography.labelLarge) {
             Row(
                 modifier = modifier
-                    .heightIn(min = 50.dp)
+                    .heightIn(min = 52.dp)
                     .alpha(if (pressed) pressedAlpha else 1f)
-                    .clip(RoundedCornerShape(14.dp))
+                    .clip(CircleShape)
                     .background(container)
                     .clickable(interactionSource = source, indication = null, enabled = enabled, role = Role.Button, onClick = onClick)
                     .padding(horizontal = 20.dp, vertical = 12.dp),
@@ -158,7 +160,7 @@ private fun FilledButton(
     }
 }
 
-/** 배경 없는 글자 버튼 (UIButton.Configuration.plain). 누르면 흐려진다 */
+/** 배경 없는 글자 버튼. 누르면 흐려진다 */
 @Composable
 fun PlainButton(
     onClick: () -> Unit,
@@ -170,7 +172,7 @@ fun PlainButton(
 ) {
     val source = remember { MutableInteractionSource() }
     val pressed by source.collectIsPressedAsState()
-    CompositionLocalProvider(LocalContentColor provides if (enabled) color else LocalIosColors.current.tertiaryLabel) {
+    CompositionLocalProvider(LocalContentColor provides if (enabled) color else LocalPorumiColors.current.tertiaryLabel) {
         ProvideTextStyle(textStyle) {
             Row(
                 modifier = modifier
@@ -211,9 +213,9 @@ fun PlainIconButton(
 
 // ── 내비게이션 바 / 탭바 ──────────────────────────────
 
-/** iOS 내비게이션 바: 가운데 제목(17pt semibold) + 왼쪽 ‹ 뒤로 + 오른쪽 액션 */
+/** 상단 바: 가운데 제목 + 왼쪽 동그란 뒤로 버튼 + 오른쪽 액션 */
 @Composable
-fun IosTopBar(
+fun PorumiTopBar(
     title: String,
     onBack: (() -> Unit)?,
     modifier: Modifier = Modifier,
@@ -224,14 +226,14 @@ fun IosTopBar(
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.background)
             .windowInsetsPadding(WindowInsets.statusBars)
-            .height(44.dp),
+            .height(56.dp),
     ) {
         if (onBack != null) {
-            PlainIconButton(
+            CircleIconButton(
                 Icons.Rounded.ArrowBackIosNew,
                 contentDescription = "뒤로",
                 onClick = onBack,
-                modifier = Modifier.align(Alignment.CenterStart).padding(start = 4.dp),
+                modifier = Modifier.align(Alignment.CenterStart).padding(start = 12.dp),
             )
         }
         Text(
@@ -242,41 +244,95 @@ fun IosTopBar(
             textAlign = TextAlign.Center,
             modifier = Modifier.align(Alignment.Center).padding(horizontal = 96.dp),
         )
-        Row(Modifier.align(Alignment.CenterEnd).padding(end = 4.dp), verticalAlignment = Alignment.CenterVertically, content = actions)
+        Row(
+            Modifier.align(Alignment.CenterEnd).padding(end = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            content = actions,
+        )
+    }
+}
+
+/** 흰 동그라미 안의 아이콘 버튼 (상단 바용) */
+@Composable
+fun CircleIconButton(
+    icon: ImageVector,
+    contentDescription: String?,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    tint: Color = MaterialTheme.colorScheme.onSurface,
+) {
+    val source = remember { MutableInteractionSource() }
+    val pressed by source.collectIsPressedAsState()
+    val extra = LocalPorumiColors.current
+    Box(
+        modifier = modifier
+            .size(40.dp)
+            .alpha(if (pressed) 0.6f else 1f)
+            .shadow(6.dp, CircleShape, ambientColor = extra.cardShadow, spotColor = extra.cardShadow)
+            .background(MaterialTheme.colorScheme.surfaceContainer, CircleShape)
+            .clickable(interactionSource = source, indication = null, role = Role.Button, onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(icon, contentDescription = contentDescription, tint = tint, modifier = Modifier.size(18.dp))
     }
 }
 
 data class TabItem(val label: String, val icon: ImageVector)
 
-/** iOS 탭바: 위쪽 구분선 + 아이콘·작은 라벨, 선택된 탭만 tint 색 */
+/** 떠 있는 둥근 탭바: 선택된 탭은 아이콘 뒤에 복숭아색 말랑한 배경 */
 @Composable
-fun IosTabBar(items: List<TabItem>, selectedIndex: Int, onSelect: (Int) -> Unit, modifier: Modifier = Modifier) {
-    val ios = LocalIosColors.current
-    Column(modifier.fillMaxWidth().background(ios.barBackground)) {
-        Box(Modifier.fillMaxWidth().height(Hairline).background(ios.separator))
-        Row(Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.navigationBars).height(50.dp)) {
+fun PorumiTabBar(items: List<TabItem>, selectedIndex: Int, onSelect: (Int) -> Unit, modifier: Modifier = Modifier) {
+    val extra = LocalPorumiColors.current
+    val colors = MaterialTheme.colorScheme
+    Box(
+        modifier
+            .fillMaxWidth()
+            .windowInsetsPadding(WindowInsets.navigationBars)
+            .padding(start = 16.dp, end = 16.dp, top = 6.dp, bottom = 10.dp),
+    ) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .height(64.dp)
+                .shadow(16.dp, RoundedCornerShape(32.dp), ambientColor = extra.cardShadow, spotColor = extra.cardShadow)
+                .background(extra.barBackground, RoundedCornerShape(32.dp))
+                .padding(horizontal = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             items.forEachIndexed { i, item ->
-                val color by animateColorAsState(
-                    if (i == selectedIndex) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
-                    tween(150),
-                )
+                val selected = i == selectedIndex
+                val color by animateColorAsState(if (selected) colors.primary else colors.secondary, tween(150))
+                val bubble by animateColorAsState(if (selected) colors.primaryContainer else Color.Transparent, tween(150))
                 Column(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
-                        .clickable(interactionSource = null, indication = null, role = Role.Tab) { onSelect(i) }
-                        .padding(top = 6.dp),
+                        .clickable(interactionSource = null, indication = null, role = Role.Tab) { onSelect(i) },
                     horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
                 ) {
-                    Icon(item.icon, contentDescription = null, tint = color, modifier = Modifier.size(26.dp))
-                    Text(item.label, fontSize = 10.sp, lineHeight = 12.sp, fontWeight = FontWeight.Medium, color = color)
+                    Box(
+                        Modifier.size(width = 48.dp, height = 30.dp).background(bubble, CircleShape),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(item.icon, contentDescription = null, tint = color, modifier = Modifier.size(22.dp))
+                    }
+                    Text(
+                        item.label,
+                        fontSize = 11.sp,
+                        lineHeight = 14.sp,
+                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+                        color = color,
+                        modifier = Modifier.padding(top = 2.dp),
+                    )
                 }
             }
         }
     }
 }
 
-/** 탭 화면 상단의 Large Title (34pt bold) */
+/** 탭 화면 상단의 큰 제목 */
 @Composable
 fun LargeTitle(text: String, modifier: Modifier = Modifier) {
     Text(text, style = MaterialTheme.typography.headlineLarge, modifier = modifier)
@@ -284,10 +340,10 @@ fun LargeTitle(text: String, modifier: Modifier = Modifier) {
 
 // ── 입력 컨트롤 ──────────────────────────────
 
-/** iOS 스위치 (UISwitch, 51×31) */
+/** 스위치 (51×31) */
 @Composable
-fun IosSwitch(checked: Boolean, onCheckedChange: ((Boolean) -> Unit)?, modifier: Modifier = Modifier, enabled: Boolean = true) {
-    val ios = LocalIosColors.current
+fun PorumiSwitch(checked: Boolean, onCheckedChange: ((Boolean) -> Unit)?, modifier: Modifier = Modifier, enabled: Boolean = true) {
+    val ios = LocalPorumiColors.current
     val progress by animateFloatAsState(if (checked) 1f else 0f, spring(dampingRatio = 0.75f, stiffness = 700f))
     Box(
         modifier = modifier
@@ -319,7 +375,7 @@ fun IosSwitch(checked: Boolean, onCheckedChange: ((Boolean) -> Unit)?, modifier:
     }
 }
 
-/** 체크박스 대신 쓰는 원형 체크 (미리알림 앱 스타일) */
+/** 체크박스 대신 쓰는 원형 체크 */
 @Composable
 fun CheckCircle(checked: Boolean, onCheckedChange: (Boolean) -> Unit, modifier: Modifier = Modifier) {
     val tint = MaterialTheme.colorScheme.primary
@@ -335,7 +391,7 @@ fun CheckCircle(checked: Boolean, onCheckedChange: (Boolean) -> Unit, modifier: 
                 .clip(CircleShape)
                 .then(
                     if (checked) Modifier.background(tint)
-                    else Modifier.border(1.5.dp, LocalIosColors.current.tertiaryLabel, CircleShape),
+                    else Modifier.border(1.5.dp, LocalPorumiColors.current.tertiaryLabel, CircleShape),
                 ),
             contentAlignment = Alignment.Center,
         ) {
@@ -344,15 +400,15 @@ fun CheckCircle(checked: Boolean, onCheckedChange: (Boolean) -> Unit, modifier: 
     }
 }
 
-/** 세그먼트 컨트롤 (UISegmentedControl) */
+/** 세그먼트 컨트롤 */
 @Composable
 fun SegmentedControl(options: List<String>, selectedIndex: Int, onSelect: (Int) -> Unit, modifier: Modifier = Modifier) {
-    val ios = LocalIosColors.current
+    val ios = LocalPorumiColors.current
     BoxWithConstraints(
         modifier
             .fillMaxWidth()
-            .height(36.dp)
-            .clip(RoundedCornerShape(9.dp))
+            .height(42.dp)
+            .clip(RoundedCornerShape(14.dp))
             .background(ios.fill)
             .padding(2.dp),
     ) {
@@ -363,8 +419,8 @@ fun SegmentedControl(options: List<String>, selectedIndex: Int, onSelect: (Int) 
                 .offset(x = offset)
                 .width(segment)
                 .fillMaxHeight()
-                .shadow(1.dp, RoundedCornerShape(7.dp))
-                .background(ios.segmentSelected, RoundedCornerShape(7.dp)),
+                .shadow(2.dp, RoundedCornerShape(11.dp))
+                .background(ios.segmentSelected, RoundedCornerShape(11.dp)),
         )
         Row(Modifier.fillMaxSize()) {
             options.forEachIndexed { i, label ->
@@ -399,14 +455,15 @@ fun CapsuleChip(label: String, selected: Boolean, onClick: () -> Unit, modifier:
         modifier = modifier
             .clip(CircleShape)
             .background(if (selected) colors.primary else colors.surfaceContainer)
+            .then(if (selected) Modifier else Modifier.border(1.dp, colors.outline, CircleShape))
             .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 9.dp),
+            .padding(horizontal = 16.dp, vertical = 10.dp),
     )
 }
 
-/** 테두리 없는 둥근 텍스트 필드 (iOS 는 라벨 대신 placeholder 를 쓴다) */
+/** 둥근 텍스트 필드: 라벨 대신 placeholder, 포커스되면 복숭아색 테두리 */
 @Composable
-fun IosTextField(
+fun PorumiTextField(
     value: String,
     onValueChange: (String) -> Unit,
     placeholder: String,
@@ -418,9 +475,17 @@ fun IosTextField(
     containerColor: Color = MaterialTheme.colorScheme.surfaceContainer,
 ) {
     val colors = MaterialTheme.colorScheme
-    val shape = RoundedCornerShape(12.dp)
+    val shape = RoundedCornerShape(16.dp)
+    val source = remember { MutableInteractionSource() }
+    val focused by source.collectIsFocusedAsState()
+    val borderColor = when {
+        isError -> colors.error
+        focused -> colors.primary
+        else -> colors.outline
+    }
     Column(modifier) {
         BasicTextField(
+            interactionSource = source,
             value = value,
             onValueChange = onValueChange,
             singleLine = true,
@@ -433,15 +498,15 @@ fun IosTextField(
                 Box(
                     Modifier
                         .fillMaxWidth()
-                        .heightIn(min = 50.dp)
+                        .heightIn(min = 54.dp)
                         .clip(shape)
                         .background(containerColor)
-                        .then(if (isError) Modifier.border(1.dp, colors.error, shape) else Modifier)
+                        .border(if (focused || isError) 1.5.dp else 1.dp, borderColor, shape)
                         .padding(horizontal = 16.dp),
                     contentAlignment = Alignment.CenterStart,
                 ) {
                     if (value.isEmpty()) {
-                        Text(placeholder, style = MaterialTheme.typography.bodyLarge, color = LocalIosColors.current.tertiaryLabel, maxLines = 1)
+                        Text(placeholder, style = MaterialTheme.typography.bodyLarge, color = LocalPorumiColors.current.tertiaryLabel, maxLines = 1)
                     }
                     inner()
                 }
@@ -460,11 +525,11 @@ fun IosTextField(
 
 // ── 진행 표시 ──────────────────────────────
 
-/** iOS 활동 표시기 (UIActivityIndicatorView): 8개 살이 돌아가며 흐려진다 */
+/** 로딩 표시기: 8개 살이 돌아가며 흐려진다 */
 @Composable
 fun ActivityIndicator(
     modifier: Modifier = Modifier,
-    color: Color = MaterialTheme.colorScheme.onSurfaceVariant,
+    color: Color = MaterialTheme.colorScheme.primary,
     size: Dp = 22.dp,
     animating: Boolean = true,
 ) {
@@ -509,54 +574,54 @@ data class AlertAction(
 )
 
 /**
- * iOS 알림창 (UIAlertController .alert): 가운데 정렬 제목/메시지, 구분선으로 나뉜 버튼.
+ * 둥근 카드형 알림창: 가운데 정렬 제목/메시지 + 캡슐 버튼.
  * 버튼이 2개면 가로(취소는 왼쪽에 두기), 그 외에는 세로로 쌓는다. 바깥을 눌러도 닫히지 않는다.
  */
 @Composable
-fun IosAlertDialog(
+fun PorumiAlertDialog(
     onDismissRequest: () -> Unit,
     title: String,
     actions: List<AlertAction>,
     message: String? = null,
     content: (@Composable ColumnScope.() -> Unit)? = null,
 ) {
-    val ios = LocalIosColors.current
+    val extra = LocalPorumiColors.current
     Dialog(
         onDismissRequest = onDismissRequest,
         properties = DialogProperties(usePlatformDefaultWidth = false, dismissOnClickOutside = false),
     ) {
         Column(
             Modifier
-                .width(286.dp)
-                .clip(RoundedCornerShape(14.dp))
-                .background(ios.alertBackground),
+                .padding(horizontal = 32.dp)
+                .widthIn(max = 340.dp)
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(28.dp))
+                .background(extra.alertBackground)
+                .padding(start = 20.dp, end = 20.dp, top = 26.dp, bottom = 20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            Column(
-                Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 18.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                Text(title, style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
-                if (message != null) {
-                    Text(message, style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.Center)
-                }
-                if (content != null) {
-                    Spacer(Modifier.height(10.dp))
-                    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp), content = content)
-                }
+            Text(title, style = MaterialTheme.typography.titleLarge, textAlign = TextAlign.Center)
+            if (message != null) {
+                Text(
+                    message,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                )
             }
-            Box(Modifier.fillMaxWidth().height(Hairline).background(ios.separator))
+            if (content != null) {
+                Spacer(Modifier.height(8.dp))
+                Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp), content = content)
+            }
+            Spacer(Modifier.height(12.dp))
             if (actions.size == 2) {
-                Row(Modifier.fillMaxWidth().height(44.dp)) {
-                    AlertButton(actions[0], Modifier.weight(1f).fillMaxHeight())
-                    Box(Modifier.width(Hairline).fillMaxHeight().background(ios.separator))
-                    AlertButton(actions[1], Modifier.weight(1f).fillMaxHeight())
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    AlertButton(actions[0], Modifier.weight(1f))
+                    AlertButton(actions[1], Modifier.weight(1f))
                 }
             } else {
-                actions.forEachIndexed { i, action ->
-                    if (i > 0) Box(Modifier.fillMaxWidth().height(Hairline).background(ios.separator))
-                    AlertButton(action, Modifier.fillMaxWidth().height(44.dp))
-                }
+                actions.forEach { AlertButton(it, Modifier.fillMaxWidth()) }
             }
         }
     }
@@ -564,20 +629,20 @@ fun IosAlertDialog(
 
 @Composable
 private fun AlertButton(action: AlertAction, modifier: Modifier) {
-    val color = when {
-        !action.enabled -> LocalIosColors.current.tertiaryLabel
-        action.style == AlertActionStyle.Destructive -> MaterialTheme.colorScheme.error
-        else -> MaterialTheme.colorScheme.primary
+    val colors = MaterialTheme.colorScheme
+    val extra = LocalPorumiColors.current
+    val (container, content) = when {
+        !action.enabled -> extra.fill to extra.tertiaryLabel
+        action.style == AlertActionStyle.Cancel -> extra.fill to colors.onSurface
+        action.style == AlertActionStyle.Destructive -> colors.error to colors.onError
+        else -> colors.primary to colors.onPrimary
     }
-    Box(
-        modifier.clickable(enabled = action.enabled, role = Role.Button, onClick = action.onClick),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            action.label,
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = if (action.style == AlertActionStyle.Default) FontWeight.SemiBold else FontWeight.Normal,
-            color = color,
-        )
-    }
+    FilledButton(
+        onClick = action.onClick,
+        modifier = modifier,
+        enabled = action.enabled,
+        container = container,
+        content = content,
+        pressedAlpha = 0.75f,
+    ) { Text(action.label, maxLines = 1) }
 }

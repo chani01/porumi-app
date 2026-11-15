@@ -26,9 +26,11 @@ import androidx.compose.foundation.background
 import androidx.compose.material.icons.outlined.Delete
 import com.chani.porumi.ui.components.AlertAction
 import com.chani.porumi.ui.components.AlertActionStyle
-import com.chani.porumi.ui.components.IosAlertDialog
-import com.chani.porumi.ui.components.IosTopBar
-import com.chani.porumi.ui.components.PlainIconButton
+import com.chani.porumi.ui.components.PorumiAlertDialog
+import com.chani.porumi.ui.components.PorumiTopBar
+import com.chani.porumi.ui.components.CircleIconButton
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 
 @Composable
 fun DetailScreen(
@@ -41,9 +43,9 @@ fun DetailScreen(
     var confirmDelete by remember { mutableStateOf(false) }
 
     Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-        IosTopBar(title = analysis?.localDateTimeLabel() ?: "", onBack = onBack) {
+        PorumiTopBar(title = analysis?.localDateTimeLabel() ?: "", onBack = onBack) {
             if (analysis != null) {
-                PlainIconButton(Icons.Outlined.Delete, contentDescription = "삭제", onClick = { confirmDelete = true })
+                CircleIconButton(Icons.Outlined.Delete, contentDescription = "삭제", onClick = { confirmDelete = true }, tint = MaterialTheme.colorScheme.error)
             }
         }
         if (analysis != null) {
@@ -51,14 +53,14 @@ fun DetailScreen(
                 modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                PetPhoto(analysis.imagePath, Modifier.fillMaxWidth().aspectRatio(1f))
+                PetPhoto(analysis.imagePath, Modifier.padding(horizontal = 16.dp).fillMaxWidth().aspectRatio(1f).clip(RoundedCornerShape(24.dp)))
                 AnalysisResultContent(analysis, pet?.name, Modifier.padding(horizontal = 16.dp).padding(bottom = 24.dp))
             }
         }
     }
 
     if (confirmDelete && analysis != null) {
-        IosAlertDialog(
+        PorumiAlertDialog(
             onDismissRequest = { confirmDelete = false },
             title = "이 기록을 삭제할까요?",
             message = "사진과 분석 결과가 함께 삭제되고 되돌릴 수 없어요.",

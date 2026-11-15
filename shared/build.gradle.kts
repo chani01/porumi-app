@@ -129,3 +129,8 @@ kotlin {
 dependencies {
     androidRuntimeClasspath(libs.compose.uiTooling)
 }
+
+compose.resources {
+    packageOfResClass = "com.chani.porumi.resources"
+    publicResClass = false
+}

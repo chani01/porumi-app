@@ -33,6 +33,8 @@ import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import androidx.compose.ui.draw.shadow
+import com.chani.porumi.ui.theme.LocalPorumiColors
 
 /** 비공개 Storage 사진 (Coil3Integration 이 사용자 토큰으로 내려받음) */
 @Composable
@@ -50,7 +52,7 @@ fun EmotionBadge(emotion: Emotion, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .clip(CircleShape)
-            .background(Color.Black.copy(alpha = 0.35f))
+            .background(Color.White.copy(alpha = 0.85f))
             .padding(horizontal = 6.dp, vertical = 2.dp),
     ) {
         Text(emotion.emoji, fontSize = 14.sp)
@@ -84,7 +86,7 @@ fun AnalysisResultContent(analysis: Analysis, petName: String?, modifier: Modifi
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
+                    .clip(RoundedCornerShape(18.dp))
                     .background(MaterialTheme.colorScheme.primaryContainer)
                     .padding(16.dp),
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -134,12 +136,15 @@ fun AnalysisResultContent(analysis: Analysis, petName: String?, modifier: Modifi
     }
 }
 
+private val CardShape = RoundedCornerShape(24.dp)
+
 @Composable
 fun ClickableCard(onClick: (() -> Unit)?, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
+            .shadow(12.dp, CardShape, ambientColor = LocalPorumiColors.current.cardShadow, spotColor = LocalPorumiColors.current.cardShadow)
+            .clip(CardShape)
             .background(MaterialTheme.colorScheme.surfaceContainer)
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
             .padding(16.dp),
