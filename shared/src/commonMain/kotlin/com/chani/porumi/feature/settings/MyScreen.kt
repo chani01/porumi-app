@@ -14,12 +14,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.HelpOutline
-import androidx.compose.material.icons.outlined.Code
-import androidx.compose.material.icons.outlined.Description
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.Notifications
-import androidx.compose.material.icons.outlined.PrivacyTip
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -36,7 +30,6 @@ import com.chani.porumi.ui.components.ClickableCard
 import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.material.icons.automirrored.rounded.ArrowForwardIos
 import com.chani.porumi.ui.theme.LocalPorumiColors
-import com.chani.porumi.ui.theme.Tints
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -49,6 +42,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import com.chani.porumi.domain.Pet
 import com.chani.porumi.ui.components.PetAvatar
 import com.chani.porumi.ui.components.TabHeader
+import androidx.compose.material.icons.rounded.Notifications
+import androidx.compose.material.icons.rounded.SupportAgent
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.style.TextAlign
+import com.chani.porumi.ui.components.IconBubble
 
 @Composable
 fun MyScreen(
@@ -102,16 +100,48 @@ fun MyScreen(
             modifier = Modifier.padding(horizontal = 16.dp),
         )
 
-        Spacer(Modifier.height(8.dp))
-        SettingsSection("앱 설정") {
-            SettingsRow("알림 설정", Icons.Outlined.Notifications, onNotifications, iconColor = Tints.Red)
+        // 자주 쓰는 두 가지는 위 카드들과 같은 말랑한 타일로
+        Row(
+            Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            QuickTile(Icons.Rounded.Notifications, "알림 설정", "리마인더 · 리포트", onNotifications, Modifier.weight(1f))
+            QuickTile(Icons.Rounded.SupportAgent, "고객센터", "자주 묻는 질문 · 문의", onSupport, Modifier.weight(1f))
         }
-        SettingsSection("지원") {
-            SettingsRow("고객센터", Icons.AutoMirrored.Outlined.HelpOutline, onSupport, iconColor = Tints.Blue)
-            SettingsRow(LegalDoc.TERMS.title, Icons.Outlined.Description, { onOpenLegal(LegalDoc.TERMS) }, iconColor = Tints.Gray)
-            SettingsRow(LegalDoc.PRIVACY.title, Icons.Outlined.PrivacyTip, { onOpenLegal(LegalDoc.PRIVACY) }, iconColor = Tints.Indigo)
-            SettingsRow("오픈소스 라이선스", Icons.Outlined.Code, onLicenses, iconColor = Tints.Gray)
-            SettingsRow("앱 버전", Icons.Outlined.Info, onClick = null, trailingText = AppInfo.VERSION, iconColor = Tints.Gray)
+
+        // 약관·정보는 아이콘 없이 조용하게
+        SettingsSection(null) {
+            SettingsRow(LegalDoc.TERMS.title, icon = null, onClick = { onOpenLegal(LegalDoc.TERMS) })
+            SettingsRow(LegalDoc.PRIVACY.title, icon = null, onClick = { onOpenLegal(LegalDoc.PRIVACY) })
+            SettingsRow("오픈소스 라이선스", icon = null, onClick = onLicenses)
+        }
+
+        Text(
+            "Porumi v${AppInfo.VERSION}\n우리 아이 표정으로 읽는 하루 기분",
+            style = MaterialTheme.typography.labelSmall,
+            color = LocalPorumiColors.current.tertiaryLabel,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 8.dp),
+        )
+    }
+}
+
+/** 바로가기 타일: 복숭아 아이콘 동그라미 + 제목 + 짧은 설명 */
+@Composable
+private fun QuickTile(icon: ImageVector, title: String, description: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    ClickableCard(onClick = onClick, modifier = modifier) {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            IconBubble(icon, size = 44.dp)
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(title, style = MaterialTheme.typography.titleMedium)
+                Text(
+                    description,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
         }
     }
 }
