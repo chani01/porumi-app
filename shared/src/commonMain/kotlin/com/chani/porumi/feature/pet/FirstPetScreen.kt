@@ -2,16 +2,11 @@ package com.chani.porumi.feature.pet
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.material3.Button
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -26,6 +21,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.chani.porumi.domain.Species
 import org.koin.compose.viewmodel.koinViewModel
+import com.chani.porumi.ui.components.IosTextField
+import com.chani.porumi.ui.components.PrimaryButton
+import com.chani.porumi.ui.components.SegmentedControl
 
 /** 아이가 한 명도 없을 때 보여주는 첫 등록 화면 */
 @Composable
@@ -39,29 +37,28 @@ fun FirstPetScreen(viewModel: PetsViewModel = koinViewModel()) {
         verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
     ) {
         Text(species.emoji, fontSize = 56.sp)
-        Text("우리 아이를 소개해 주세요", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+        Text("우리 아이를 소개해 주세요", style = MaterialTheme.typography.headlineSmall)
         Text(
             "아이별로 표정을 기록하고 최근 7일 기분을 보여드려요.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Species.entries.forEach { s ->
-                FilterChip(selected = species == s, onClick = { species = s }, label = { Text("${s.emoji} ${s.label}") })
-            }
-        }
-        OutlinedTextField(
+        SegmentedControl(
+            options = Species.entries.map { "${it.emoji} ${it.label}" },
+            selectedIndex = Species.entries.indexOf(species),
+            onSelect = { species = Species.entries[it] },
+        )
+        IosTextField(
             value = name,
             onValueChange = { if (it.length <= 30) name = it },
-            label = { Text("이름") },
-            singleLine = true,
+            placeholder = "이름",
             modifier = Modifier.fillMaxWidth(),
         )
         error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-        Button(
+        PrimaryButton(
             onClick = { viewModel.addPet(name, species) },
             enabled = name.isNotBlank(),
-            modifier = Modifier.fillMaxWidth().height(52.dp),
+            modifier = Modifier.fillMaxWidth(),
         ) { Text("시작하기") }
     }
 }

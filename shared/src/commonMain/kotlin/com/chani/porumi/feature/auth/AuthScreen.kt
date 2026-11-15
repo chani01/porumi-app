@@ -2,23 +2,16 @@ package com.chani.porumi.feature.auth
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,13 +22,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.chani.porumi.feature.legal.LegalDoc
 import com.chani.porumi.feature.legal.LegalScreen
 import org.koin.compose.viewmodel.koinViewModel
+import androidx.compose.material3.LocalContentColor
+import com.chani.porumi.ui.components.ActivityIndicator
+import com.chani.porumi.ui.components.CheckCircle
+import com.chani.porumi.ui.components.IosTextField
+import com.chani.porumi.ui.components.PlainButton
+import com.chani.porumi.ui.components.PrimaryButton
 
 @Composable
 fun AuthScreen(viewModel: AuthViewModel = koinViewModel()) {
@@ -53,27 +51,25 @@ fun AuthScreen(viewModel: AuthViewModel = koinViewModel()) {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text("🐶🐱", fontSize = 56.sp)
-        Text("Porumi", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
+        Text("Porumi", style = MaterialTheme.typography.headlineLarge)
         Text(
             "우리 아이 표정으로 읽는 하루 기분",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 16.dp),
         )
-        OutlinedTextField(
+        IosTextField(
             value = state.email,
             onValueChange = viewModel::onEmailChange,
-            label = { Text("이메일") },
-            singleLine = true,
+            placeholder = "이메일",
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             modifier = Modifier.fillMaxWidth(),
         )
-        OutlinedTextField(
+        IosTextField(
             value = state.password,
             onValueChange = viewModel::onPasswordChange,
-            label = { Text("비밀번호 (6자 이상)") },
-            singleLine = true,
-            visualTransformation = PasswordVisualTransformation(),
+            placeholder = "비밀번호 (6자 이상)",
+            secure = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             modifier = Modifier.fillMaxWidth(),
         )
@@ -86,15 +82,15 @@ fun AuthScreen(viewModel: AuthViewModel = koinViewModel()) {
         }
         state.error?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) }
         state.info?.let { Text(it, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodySmall) }
-        Button(
+        PrimaryButton(
             onClick = viewModel::submit,
             enabled = state.canSubmit,
-            modifier = Modifier.fillMaxWidth().height(52.dp),
+            modifier = Modifier.fillMaxWidth(),
         ) {
-            if (state.loading) CircularProgressIndicator(Modifier.height(20.dp), strokeWidth = 2.dp)
+            if (state.loading) ActivityIndicator(color = LocalContentColor.current, size = 20.dp)
             else Text(if (state.isSignUp) "회원가입" else "로그인")
         }
-        TextButton(onClick = viewModel::toggleMode) {
+        PlainButton(onClick = viewModel::toggleMode, textStyle = MaterialTheme.typography.bodyMedium) {
             Text(if (state.isSignUp) "이미 계정이 있어요 · 로그인" else "처음이에요 · 회원가입")
         }
     }
@@ -105,7 +101,7 @@ fun AuthScreen(viewModel: AuthViewModel = koinViewModel()) {
 private fun TermsAgreement(checked: Boolean, onCheckedChange: (Boolean) -> Unit, onOpen: (LegalDoc) -> Unit) {
     Column(Modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Checkbox(checked = checked, onCheckedChange = onCheckedChange)
+            CheckCircle(checked = checked, onCheckedChange = onCheckedChange)
             Text(
                 "[필수] 만 14세 이상이며, 이용약관과 개인정보 처리방침(국외 이전 포함)에 동의해요",
                 style = MaterialTheme.typography.bodySmall,
@@ -113,8 +109,8 @@ private fun TermsAgreement(checked: Boolean, onCheckedChange: (Boolean) -> Unit,
         }
         FlowRow(Modifier.padding(start = 40.dp)) {
             LegalDoc.entries.forEach { doc ->
-                TextButton(onClick = { onOpen(doc) }, contentPadding = PaddingValues(horizontal = 8.dp)) {
-                    Text("${doc.title} 보기", style = MaterialTheme.typography.labelMedium)
+                PlainButton(onClick = { onOpen(doc) }, textStyle = MaterialTheme.typography.labelMedium) {
+                    Text("${doc.title} 보기")
                 }
             }
         }

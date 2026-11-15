@@ -68,13 +68,12 @@ fun AnalysisResultContent(analysis: Analysis, petName: String?, modifier: Modifi
             Column {
                 Text(
                     "${analysis.species.emoji} ${petName ?: analysis.species.label}",
-                    style = MaterialTheme.typography.labelLarge,
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Text(
                     "${analysis.primaryEmotion.label}  ${(analysis.confidence * 100).toInt()}%",
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleLarge,
                 )
             }
         }
@@ -85,7 +84,7 @@ fun AnalysisResultContent(analysis: Analysis, petName: String?, modifier: Modifi
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
+                    .clip(RoundedCornerShape(12.dp))
                     .background(MaterialTheme.colorScheme.primaryContainer)
                     .padding(16.dp),
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -120,7 +119,7 @@ fun AnalysisResultContent(analysis: Analysis, petName: String?, modifier: Modifi
 
         if (analysis.cues.isNotEmpty()) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text("💬 이렇게 읽었어요", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                Text("💬 이렇게 읽었어요", style = MaterialTheme.typography.titleMedium)
                 analysis.cues.forEach { cue ->
                     Text("• $cue", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
@@ -140,7 +139,7 @@ fun ClickableCard(onClick: (() -> Unit)?, modifier: Modifier = Modifier, content
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
+            .clip(RoundedCornerShape(16.dp))
             .background(MaterialTheme.colorScheme.surfaceContainer)
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
             .padding(16.dp),

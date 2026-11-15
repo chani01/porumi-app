@@ -7,22 +7,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Insights
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Insights
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.PhotoCamera
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -69,6 +60,9 @@ import com.chani.porumi.feature.settings.MyScreen
 import com.chani.porumi.feature.settings.NotificationSettingsScreen
 import com.chani.porumi.feature.settings.SupportScreen
 import com.chani.porumi.feature.report.ReportScreen
+import com.chani.porumi.ui.components.IosTabBar
+import com.chani.porumi.ui.components.PrimaryButton
+import com.chani.porumi.ui.components.TabItem
 import com.chani.porumi.ui.theme.PorumiTheme
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.annotations.SupabaseExperimental
@@ -147,19 +141,20 @@ private fun RootContent(state: AppState?, onRetry: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text("정보를 불러오지 못했어요")
-            Button(onClick = onRetry) { Text("다시 시도") }
+            PrimaryButton(onClick = onRetry) { Text("다시 시도") }
         }
         AppState.Ready -> MainScaffold()
     }
 }
 
-private data class Tab(val label: String, val selectedIcon: ImageVector, val icon: ImageVector, val route: Any)
+private data class Tab(val item: TabItem, val route: Any)
 
+// iOS 탭바는 선택 여부와 관계없이 채워진 아이콘을 쓰고 색으로만 구분한다
 private val tabs = listOf(
-    Tab("홈", Icons.Rounded.Home, Icons.Outlined.Home, HomeRoute),
-    Tab("리포트", Icons.Rounded.Insights, Icons.Outlined.Insights, ReportRoute),
-    Tab("기록", Icons.Rounded.PhotoCamera, Icons.Outlined.PhotoCamera, RecordRoute),
-    Tab("마이", Icons.Rounded.Person, Icons.Outlined.Person, MyRoute),
+    Tab(TabItem("홈", Icons.Rounded.Home), HomeRoute),
+    Tab(TabItem("리포트", Icons.Rounded.Insights), ReportRoute),
+    Tab(TabItem("기록", Icons.Rounded.PhotoCamera), RecordRoute),
+    Tab(TabItem("마이", Icons.Rounded.Person), MyRoute),
 )
 
 @Composable
@@ -168,29 +163,25 @@ private fun MainScaffold() {
     val backStack by navController.currentBackStackEntryAsState()
     val destination = backStack?.destination
     // 하단 탭은 최상위 4개 화면에서만 표시
-    val showBottomBar = tabs.any { destination?.hasRoute(it.route::class) == true }
+    val selectedTab = tabs.indexOfFirst { destination?.hasRoute(it.route::class) == true }
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
-            if (showBottomBar) {
-                NavigationBar {
-                    tabs.forEach { tab ->
-                        val selected = destination?.hasRoute(tab.route::class) == true
-                        NavigationBarItem(
-                            selected = selected,
-                            onClick = { navController.navigateTab(tab.route) },
-                            icon = { Icon(if (selected) tab.selectedIcon else tab.icon, contentDescription = null) },
-                            label = { Text(tab.label) },
-                        )
-                    }
-                }
+            if (selectedTab >= 0) {
+                IosTabBar(
+                    items = tabs.map { it.item },
+                    selectedIndex = selectedTab,
+                    onSelect = { navController.navigateTab(tabs[it].route) },
+                )
             }
         },
     ) { padding ->
         NavHost(
             navController = navController,
             startDestination = HomeRoute,
-            modifier = Modifier.padding(padding),
+            // 상태바 인셋은 여기서 소비 → 하위 화면의 내비게이션 바가 중복으로 띄우지 않음
+            modifier = Modifier.padding(padding).consumeWindowInsets(padding),
         ) {
             composable<HomeRoute> {
                 HomeScreen(

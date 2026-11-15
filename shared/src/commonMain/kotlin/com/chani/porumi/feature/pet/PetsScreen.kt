@@ -4,21 +4,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,6 +28,14 @@ import com.chani.porumi.feature.settings.SettingsPage
 import com.chani.porumi.ui.components.ClickableCard
 import com.chani.porumi.ui.components.PetAvatar
 import org.koin.compose.viewmodel.koinViewModel
+import androidx.compose.foundation.layout.size
+import com.chani.porumi.ui.components.AlertAction
+import com.chani.porumi.ui.components.AlertActionStyle
+import com.chani.porumi.ui.components.IosAlertDialog
+import com.chani.porumi.ui.components.IosTextField
+import com.chani.porumi.ui.components.PlainIconButton
+import com.chani.porumi.ui.components.PrimaryButton
+import com.chani.porumi.ui.components.SegmentedControl
 
 /** 마이 > 반려동물 관리: 추가 / 이름·종 수정 / 삭제 (최소 한 명 유지) */
 @Composable
@@ -57,16 +58,17 @@ fun PetManageScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         PetAvatar(pet, avatars[pet.id], 48.dp)
                         Column(Modifier.weight(1f).padding(start = 14.dp)) {
-                            Text(pet.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                            Text(pet.name, style = MaterialTheme.typography.titleMedium)
                             Text(pet.species.label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
-                        IconButton(onClick = { editing = pet }) {
-                            Icon(Icons.Outlined.Edit, contentDescription = "수정")
-                        }
+                        PlainIconButton(Icons.Outlined.Edit, contentDescription = "수정", onClick = { editing = pet })
                         if (pets.size > 1) {
-                            IconButton(onClick = { deleting = pet }) {
-                                Icon(Icons.Outlined.DeleteOutline, contentDescription = "삭제")
-                            }
+                            PlainIconButton(
+                                Icons.Outlined.DeleteOutline,
+                                contentDescription = "삭제",
+                                onClick = { deleting = pet },
+                                tint = MaterialTheme.colorScheme.error,
+                            )
                         }
                     }
                 }
@@ -78,9 +80,9 @@ fun PetManageScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            Button(onClick = { showAdd = true }, modifier = Modifier.fillMaxWidth().height(52.dp)) {
-                Icon(Icons.Rounded.Add, contentDescription = null)
-                Text("아이 추가", modifier = Modifier.padding(start = 6.dp))
+            PrimaryButton(onClick = { showAdd = true }, modifier = Modifier.fillMaxWidth()) {
+                Icon(Icons.Rounded.Add, contentDescription = null, modifier = Modifier.size(20.dp))
+                Text("아이 추가")
             }
             error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
         }
@@ -113,17 +115,17 @@ fun PetManageScreen(
     }
 
     deleting?.let { pet ->
-        AlertDialog(
+        IosAlertDialog(
             onDismissRequest = { deleting = null },
-            title = { Text("${pet.name}을(를) 삭제할까요?") },
-            text = { Text("지금까지의 분석 기록은 남지만, 아이별 모아보기에서는 빠져요.") },
-            confirmButton = {
-                TextButton(onClick = {
+            title = "${pet.name}을(를) 삭제할까요?",
+            message = "지금까지의 분석 기록은 남지만, 아이별 모아보기에서는 빠져요.",
+            actions = listOf(
+                AlertAction("취소", AlertActionStyle.Cancel) { deleting = null },
+                AlertAction("삭제", AlertActionStyle.Destructive) {
                     viewModel.deletePet(pet.id)
                     deleting = null
-                }) { Text("삭제", color = MaterialTheme.colorScheme.error) }
-            },
-            dismissButton = { TextButton(onClick = { deleting = null }) { Text("취소") } },
+                },
+            ),
         )
     }
 }
@@ -139,31 +141,23 @@ fun PetEditDialog(
 ) {
     var name by remember { mutableStateOf(initialName) }
     var species by remember { mutableStateOf(initialSpecies) }
-    AlertDialog(
+    IosAlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(title) },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedTextField(
-                    value = name,
-                    onValueChange = { if (it.length <= 30) name = it },
-                    label = { Text("이름") },
-                    singleLine = true,
-                )
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Species.entries.forEach { s ->
-                        FilterChip(
-                            selected = species == s,
-                            onClick = { species = s },
-                            label = { Text(s.label) },
-                        )
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = { onConfirm(name, species) }, enabled = name.isNotBlank()) { Text(confirmLabel) }
-        },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("취소") } },
-    )
+        title = title,
+        actions = listOf(
+            AlertAction("취소", AlertActionStyle.Cancel, onClick = onDismiss),
+            AlertAction(confirmLabel, enabled = name.isNotBlank()) { onConfirm(name, species) },
+        ),
+    ) {
+        SegmentedControl(
+            options = Species.entries.map { "${it.emoji} ${it.label}" },
+            selectedIndex = Species.entries.indexOf(species),
+            onSelect = { species = Species.entries[it] },
+        )
+        IosTextField(
+            value = name,
+            onValueChange = { if (it.length <= 30) name = it },
+            placeholder = "이름",
+        )
+    }
 }

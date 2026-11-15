@@ -1,83 +1,142 @@
 package com.chani.porumi.feature.settings
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material.icons.automirrored.rounded.ArrowForwardIos
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.layoutId
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.chani.porumi.ui.components.Hairline
+import com.chani.porumi.ui.components.IosTopBar
+import com.chani.porumi.ui.theme.LocalIosColors
 
-/** 설정 하위 화면 공통 틀: 뒤로가기 + 제목 + 스크롤 영역 */
-@OptIn(ExperimentalMaterial3Api::class)
+/** 설정 하위 화면 공통 틀: iOS 내비게이션 바(‹ 뒤로 + 제목) + 스크롤 영역 */
 @Composable
 fun SettingsPage(
     title: String,
     onBack: () -> Unit,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(title, fontWeight = FontWeight.SemiBold) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "뒤로")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
-            )
-        },
-        containerColor = MaterialTheme.colorScheme.background,
-    ) { padding ->
+    Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+        IosTopBar(title = title, onBack = onBack)
         Column(
-            modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()),
+            modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 24.dp),
             content = content,
         )
     }
 }
 
-/** 제목이 붙은 둥근 카드 묶음 */
+private val SectionShape = RoundedCornerShape(16.dp)
+private val RowPadding = 16.dp
+private val IconTile = 29.dp
+private val IconGap = 14.dp
+
+/** 아이콘이 있는 행의 구분선은 글자 시작점부터 그린다 (iOS inset separator) */
+private val IconRowInset = RowPadding + IconTile + IconGap
+
+private data class SeparatorInset(val start: Dp)
+
+/** iOS inset-grouped 목록: 둥근 흰 카드 + 행 사이 들여쓴 구분선, 위에 작은 회색 머리글 */
 @Composable
-fun SettingsSection(title: String?, content: @Composable ColumnScope.() -> Unit) {
-    Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
+fun SettingsSection(title: String?, footer: String? = null, content: @Composable () -> Unit) {
+    Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp)) {
         if (title != null) {
             Text(
                 title,
-                style = MaterialTheme.typography.labelLarge,
+                style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(start = 4.dp, bottom = 8.dp),
+                modifier = Modifier.padding(start = RowPadding, bottom = 6.dp),
             )
         }
-        Column(
-            Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)),
+        GroupedColumn(
+            separatorColor = LocalIosColors.current.separator,
+            modifier = Modifier.fillMaxWidth().clip(SectionShape).background(MaterialTheme.colorScheme.surfaceContainer),
             content = content,
         )
+        if (footer != null) {
+            Text(
+                footer,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(start = RowPadding, end = RowPadding, top = 6.dp),
+            )
+        }
     }
 }
 
+/** 자식을 세로로 쌓고 자식 사이에만 구분선을 그린다. 구분선 시작 위치는 각 행의 [SeparatorInset] */
+@Composable
+private fun GroupedColumn(separatorColor: Color, modifier: Modifier, content: @Composable () -> Unit) {
+    // (y, startX) — 배치 단계에서 계산해 그리기 단계에서 사용
+    var separators by remember { mutableStateOf(emptyList<Pair<Float, Float>>()) }
+    Layout(
+        content = content,
+        modifier = modifier.drawWithContent {
+            drawContent()
+            val stroke = Hairline.toPx().coerceAtLeast(1f)
+            separators.forEach { (y, x) ->
+                drawLine(separatorColor, Offset(x, y), Offset(size.width, y), strokeWidth = stroke)
+            }
+        },
+    ) { measurables, constraints ->
+        val loose = constraints.copy(minHeight = 0)
+        val placeables = measurables.map { it.measure(loose) }
+        val width = if (constraints.hasBoundedWidth) constraints.maxWidth else placeables.maxOfOrNull { it.width } ?: 0
+        val lines = ArrayList<Pair<Float, Float>>()
+        var y = 0
+        placeables.forEachIndexed { i, p ->
+            if (i > 0 && p.height > 0) {
+                val inset = (measurables[i].layoutId as? SeparatorInset)?.start ?: IconRowInset
+                lines += y.toFloat() to inset.toPx()
+            }
+            y += p.height
+        }
+        layout(width, y) {
+            if (lines != separators) separators = lines
+            var top = 0
+            placeables.forEach {
+                it.place(0, top)
+                top += it.height
+            }
+        }
+    }
+}
+
+/**
+ * iOS 설정 앱 스타일 행: 색 타일 아이콘 + 제목(+부제목) + 오른쪽 값/셰브런/스위치.
+ * [iconColor] 는 아이콘 타일 배경색 (SystemColors 사용 권장).
+ */
 @Composable
 fun SettingsRow(
     title: String,
@@ -87,34 +146,52 @@ fun SettingsRow(
     trailingText: String? = null,
     titleColor: Color = Color.Unspecified,
     showChevron: Boolean = onClick != null,
+    iconColor: Color = MaterialTheme.colorScheme.primary,
     trailing: (@Composable () -> Unit)? = null,
 ) {
-    ListItem(
-        modifier = if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier,
-        colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-        leadingContent = icon?.let {
-            { Icon(it, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant) }
-        },
-        headlineContent = { Text(title, color = titleColor) },
-        supportingContent = subtitle?.let { { Text(it, style = MaterialTheme.typography.bodySmall) } },
-        trailingContent = {
-            when {
-                trailing != null -> trailing()
-                trailingText != null || showChevron -> androidx.compose.foundation.layout.Row(
-                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-                ) {
-                    trailingText?.let {
-                        Text(it, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                    if (showChevron) {
-                        Icon(
-                            Icons.AutoMirrored.Rounded.KeyboardArrowRight,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
+    val ios = LocalIosColors.current
+    Row(
+        modifier = Modifier
+            .layoutId(SeparatorInset(if (icon != null) IconRowInset else RowPadding))
+            .fillMaxWidth()
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+            .heightIn(min = 48.dp)
+            .padding(horizontal = RowPadding, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (icon != null) {
+            Box(
+                Modifier.size(IconTile).clip(RoundedCornerShape(7.dp)).background(iconColor),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(19.dp))
+            }
+            Spacer(Modifier.width(IconGap))
+        }
+        Column(Modifier.weight(1f)) {
+            Text(title, style = MaterialTheme.typography.bodyLarge, color = titleColor)
+            if (subtitle != null) {
+                Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+        when {
+            trailing != null -> Box(Modifier.padding(start = 12.dp)) { trailing() }
+            trailingText != null || showChevron -> Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(start = 12.dp),
+            ) {
+                if (trailingText != null) {
+                    Text(trailingText, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                if (showChevron) {
+                    Icon(
+                        Icons.AutoMirrored.Rounded.ArrowForwardIos,
+                        contentDescription = null,
+                        tint = ios.tertiaryLabel,
+                        modifier = Modifier.padding(start = 6.dp).size(14.dp),
+                    )
                 }
             }
-        },
-    )
+        }
+    }
 }

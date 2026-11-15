@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.chani.porumi.domain.Analysis
 import com.chani.porumi.domain.Pet
+import com.chani.porumi.ui.theme.LocalIosColors
 
 private val HEADER_HEIGHT = 80.dp
 
@@ -89,7 +90,7 @@ fun PetProfileHeader(
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
-                .clip(RoundedCornerShape(20.dp))
+                .clip(RoundedCornerShape(16.dp))
                 .clickable { expanded = true }
                 .padding(vertical = 8.dp, horizontal = 4.dp),
         ) {
@@ -102,7 +103,7 @@ fun PetProfileHeader(
             Spacer(Modifier.width(14.dp))
             Column {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(selected.name, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    Text(selected.name, style = MaterialTheme.typography.titleLarge)
                     Icon(
                         Icons.Rounded.ExpandMore,
                         contentDescription = "아이 선택",
@@ -121,7 +122,8 @@ fun PetProfileHeader(
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            shape = RoundedCornerShape(16.dp),
+            shape = RoundedCornerShape(12.dp),
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
         ) {
             pets.forEach { pet ->
                 DropdownMenuItem(
@@ -141,7 +143,7 @@ fun PetProfileHeader(
                     },
                 )
             }
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            HorizontalDivider(thickness = Hairline, color = LocalIosColors.current.separator)
             DropdownMenuItem(
                 leadingIcon = {
                     Box(

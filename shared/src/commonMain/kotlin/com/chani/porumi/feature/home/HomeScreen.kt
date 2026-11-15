@@ -17,11 +17,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -34,7 +35,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.chani.porumi.domain.Analysis
 import com.chani.porumi.domain.WeeklyMood
+import com.chani.porumi.ui.components.ActivityIndicator
 import com.chani.porumi.ui.components.ClickableCard
+import com.chani.porumi.ui.components.PrimaryButton
 import com.chani.porumi.ui.components.EmotionBadge
 import com.chani.porumi.ui.components.PetProfileHeader
 import com.chani.porumi.ui.components.PetPhoto
@@ -56,10 +59,23 @@ fun HomeScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val rows = buildFeedRows(state.photos)
 
+    val pullState = rememberPullToRefreshState()
     PullToRefreshBox(
         isRefreshing = state.refreshing,
         onRefresh = viewModel::refresh,
         modifier = Modifier.fillMaxSize(),
+        state = pullState,
+        // iOS UIRefreshControl 처럼 당기는 만큼 스피너가 나타난다
+        indicator = {
+            ActivityIndicator(
+                animating = state.refreshing,
+                size = 26.dp,
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 16.dp)
+                    .graphicsLayer { alpha = if (state.refreshing) 1f else pullState.distanceFraction.coerceIn(0f, 1f) },
+            )
+        },
     ) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
@@ -114,11 +130,12 @@ fun WeekStripCard(
     ClickableCard(onClick = onClick, modifier = modifier) {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+                Text(title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
                 val level = week.level
                 Text(
                     if (level != null) "${level.emoji} ${level.label}" else "기록 없음",
-                    style = MaterialTheme.typography.labelLarge,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.primary,
                 )
             }
@@ -229,13 +246,13 @@ private fun EmptyFeed(onAnalyzeClick: () -> Unit) {
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text("🐶🐱", fontSize = 48.sp)
-        Text("아직 기록이 없어요", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+        Text("아직 기록이 없어요", style = MaterialTheme.typography.titleLarge)
         Text(
             "사진을 올리면 표정을 읽어서 기분을 기록해 드려요.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
-        Button(onClick = onAnalyzeClick) { Text("첫 사진 분석하기") }
+        PrimaryButton(onClick = onAnalyzeClick) { Text("첫 사진 분석하기") }
     }
 }

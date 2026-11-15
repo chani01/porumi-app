@@ -6,13 +6,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.rounded.ExpandLess
 import androidx.compose.material.icons.rounded.ExpandMore
-import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -28,6 +26,10 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.chani.porumi.ui.components.ClickableCard
+import androidx.compose.foundation.layout.size
+import com.chani.porumi.ui.components.Hairline
+import com.chani.porumi.ui.components.PrimaryButton
+import com.chani.porumi.ui.theme.LocalIosColors
 
 private val faqs = listOf(
     "표정 분석은 얼마나 정확한가요?" to
@@ -52,33 +54,40 @@ fun SupportScreen(onBack: () -> Unit) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             ClickableCard(onClick = null) {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text("무엇을 도와드릴까요?", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                    Text("무엇을 도와드릴까요?", style = MaterialTheme.typography.titleMedium)
                     Text(
                         "궁금한 점이나 불편한 점을 보내주시면 영업일 기준 1~2일 안에 답변드릴게요.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                    Button(
+                    PrimaryButton(
                         onClick = {
                             runCatching {
                                 uriHandler.openUri("mailto:${AppInfo.SUPPORT_EMAIL}?subject=%5BPorumi%5D%20%EB%AC%B8%EC%9D%98%20(v${AppInfo.VERSION})")
                             }
                         },
-                        modifier = Modifier.fillMaxWidth().height(48.dp),
+                        modifier = Modifier.fillMaxWidth(),
                     ) {
-                        Icon(Icons.Outlined.Email, contentDescription = null)
-                        Text("이메일로 문의하기", modifier = Modifier.padding(start = 8.dp))
+                        Icon(Icons.Outlined.Email, contentDescription = null, modifier = Modifier.size(20.dp))
+                        Text("이메일로 문의하기")
                     }
                     Text(AppInfo.SUPPORT_EMAIL, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
 
-            Text("자주 묻는 질문", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
-            ClickableCard(onClick = null) {
-                Column {
-                    faqs.forEachIndexed { i, (q, a) ->
-                        FaqItem(q, a)
-                        if (i != faqs.lastIndex) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(
+                    "자주 묻는 질문",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(start = 16.dp),
+                )
+                ClickableCard(onClick = null) {
+                    Column {
+                        faqs.forEachIndexed { i, (q, a) ->
+                            FaqItem(q, a)
+                            if (i != faqs.lastIndex) HorizontalDivider(thickness = Hairline, color = LocalIosColors.current.separator)
+                        }
                     }
                 }
             }
@@ -91,11 +100,11 @@ private fun FaqItem(question: String, answer: String) {
     var open by remember { mutableStateOf(false) }
     Column(Modifier.fillMaxWidth().clickable { open = !open }.padding(vertical = 12.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("Q. $question", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+            Text(question, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
             Icon(
                 if (open) Icons.Rounded.ExpandLess else Icons.Rounded.ExpandMore,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                tint = LocalIosColors.current.tertiaryLabel,
             )
         }
         AnimatedVisibility(open) {
