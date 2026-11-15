@@ -1,0 +1,9 @@
+{
+  "imports": {
+    "@supabase/functions-js": "jsr:@supabase/functions-js@^2",
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@2.119.0",
+    "@anthropic-ai/sdk": "npm:@anthropic-ai/sdk@1.8.0",
+    "@anthropic-ai/sdk/helpers/beta/zod": "npm:@anthropic-ai/sdk@1.8.0/helpers/beta/zod",
+    "zod": "npm:zod@4.6.7"
+  }
+}

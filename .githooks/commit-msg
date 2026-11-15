@@ -1,0 +1,24 @@
+#!/bin/sh
+# 커밋 메시지 제목을 "<타입>: <한국어 요약>" 형식으로 강제한다.
+msg_file="$1"
+subject=$(grep -v '^#' "$msg_file" | sed '/^[[:space:]]*$/d' | head -n 1)
+
+# git이 자동 생성하는 메시지는 통과
+case "$subject" in
+  Merge*|Revert*|fixup!*|squash!*|amend!*) exit 0 ;;
+esac
+
+types='feat|fix|refactor|style|docs|test|chore|db|func'
+if ! printf '%s\n' "$subject" | grep -Eq "^($types)(\([^)]+\))?!?: .+"; then
+  echo "✖ 커밋 제목 형식: <타입>: <한국어 요약>" >&2
+  echo "  타입: feat, fix, refactor, style, docs, test, chore, db, func" >&2
+  echo "  예) feat: 주간 리포트에 감정 비율 차트 추가" >&2
+  echo "  입력값: $subject" >&2
+  exit 1
+fi
+
+if ! printf '%s' "$subject" | perl -CI -ne 'exit(/\p{Hangul}/ ? 0 : 1)'; then
+  echo "✖ 커밋 제목 요약은 한국어로 작성해 주세요." >&2
+  echo "  입력값: $subject" >&2
+  exit 1
+fi

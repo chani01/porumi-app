@@ -1,0 +1,42 @@
+*.iml
+.kotlin
+.gradle
+**/build/
+xcuserdata
+!src/**/build/
+local.properties
+.idea
+.DS_Store
+captures
+.externalNativeBuild
+.cxx
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+!*.xcodeproj/project.xcworkspace/
+!*.xcworkspace/contents.xcworkspacedata
+**/xcshareddata/WorkspaceSettings.xcsettings
+node_modules/
+
+# Supabase CLI
+supabase/.temp/
+supabase/.branches/
+
+# Secrets / env (Supabase functions 로컬 env 포함)
+.env
+.env.*
+!.env.example
+supabase/functions/.env
+
+# Signing keys
+*.jks
+*.keystore
+*.p8
+*.p12
+*.mobileprovision
+keystore.properties
+
+# Xcode / Kotlin Native
+DerivedData/
+iosApp/build/
+*.hprof
