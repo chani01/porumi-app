@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Compose 테마(Theme.kt)와 같은 값으로 맞춰야 스플래시 → 앱 전환이 자연스럽다 -->
-    <color name="splash_background">#FFFFFAF6</color>
-    <color name="splash_icon_background">#FFE8704F</color>
-    <color name="porumi_coral_light">#FFE8704F</color>
+    <color name="splash_background">#FFFFF6EF</color>
+    <color name="splash_icon_background">#FFF2754C</color>
+    <color name="porumi_coral_light">#FFF2754C</color>
 </resources>

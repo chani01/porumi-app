@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- 앱 아이콘 배경: 연한 복숭아 → 복숭아 그라데이션 (iOS 아이콘과 동일) -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-    <solid android:color="@color/porumi_coral_light" />
+    <gradient
+        android:angle="315"
+        android:startColor="#FFFFC2A6"
+        android:endColor="#FFF2754C"
+        android:type="linear" />
 </shape>
