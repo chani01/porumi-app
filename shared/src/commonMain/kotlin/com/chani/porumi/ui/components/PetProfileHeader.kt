@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.sp
 import com.chani.porumi.domain.Analysis
 import com.chani.porumi.domain.Pet
 import com.chani.porumi.ui.theme.LocalPorumiColors
+import com.chani.porumi.domain.breedOrSpecies
 
 private val HEADER_HEIGHT = 80.dp
 
@@ -130,7 +131,7 @@ fun PetProfileHeader(
                     leadingIcon = { PetAvatar(pet, avatars[pet.id], 32.dp) },
                     text = {
                         Text(
-                            "${pet.name}  ${pet.species.label}",
+                            "${pet.name}  ${pet.breedOrSpecies}",
                             fontWeight = if (pet.id == selected.id) FontWeight.Bold else FontWeight.Normal,
                         )
                     },

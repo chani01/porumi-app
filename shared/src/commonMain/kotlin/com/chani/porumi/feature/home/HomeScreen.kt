@@ -46,6 +46,8 @@ import kotlinx.datetime.LocalDate
 import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
+import com.chani.porumi.domain.profileLine
+import com.chani.porumi.domain.breedOrSpecies
 
 private const val GAP = 6
 
@@ -90,7 +92,10 @@ fun HomeScreen(
                     pets = state.pets,
                     selected = pet,
                     avatars = state.avatars,
-                    subtitle = if (pet != null) "${pet.species.label} · 기록 ${state.photos.size}장" else "",
+                    subtitle = if (pet != null) {
+                        val profile = state.today?.let { pet.profileLine(it) } ?: pet.breedOrSpecies
+                        "$profile · 기록 ${state.photos.size}장"
+                    } else "",
                     onSelect = viewModel::selectPet,
                     onAddPet = onAddPet,
                     modifier = Modifier.padding(top = 12.dp),

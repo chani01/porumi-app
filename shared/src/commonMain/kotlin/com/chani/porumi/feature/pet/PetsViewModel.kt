@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDate
 
 class PetsViewModel(
     private val petRepository: PetRepository,
@@ -29,24 +30,24 @@ class PetsViewModel(
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
-    fun addPet(name: String, species: Species) {
+    fun addPet(name: String, species: Species, breed: String? = null, birthDate: LocalDate? = null) {
         if (name.isBlank()) return
         viewModelScope.launch {
-            runCatching { petRepository.add(name, species) }
+            runCatching { petRepository.add(name, species, breed, birthDate) }
                 .onFailure { _error.value = "아이를 추가하지 못했어요." }
         }
     }
 
-    fun updatePet(id: String, name: String, species: Species) {
+    fun updatePet(id: String, name: String, species: Species, breed: String?, birthDate: LocalDate?) {
         if (name.isBlank()) return
         viewModelScope.launch {
-            runCatching { petRepository.update(id, name, species) }
+            runCatching { petRepository.update(id, name, species, breed, birthDate) }
                 .onFailure { _error.value = "수정하지 못했어요." }
         }
     }
 
     fun deletePet(id: String) {
-        if (petRepository.pets.value.size <= 1) return // 최소 한 명 유지
+        if (petRepository.pets.value.size <= 1) return // 최소 한 마리 유지
         viewModelScope.launch {
             runCatching { petRepository.delete(id) }
                 .onFailure { _error.value = "삭제하지 못했어요." }

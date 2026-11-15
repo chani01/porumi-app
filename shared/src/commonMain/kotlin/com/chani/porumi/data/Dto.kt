@@ -4,6 +4,7 @@ import com.chani.porumi.domain.Analysis
 import com.chani.porumi.domain.Emotion
 import com.chani.porumi.domain.Pet
 import com.chani.porumi.domain.Species
+import kotlinx.datetime.LocalDate
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.time.Instant
@@ -13,12 +14,17 @@ internal data class PetDto(
     val id: String,
     val name: String,
     val species: String,
+    val breed: String? = null,
+    @SerialName("birth_date") val birthDate: LocalDate? = null,
 )
 
+/** insert / update 공용. breed·birthDate 는 null 도 그대로 보내 지울 수 있게 한다 */
 @Serializable
 internal data class NewPetDto(
     val name: String,
     val species: String,
+    val breed: String?,
+    @SerialName("birth_date") val birthDate: LocalDate?,
 )
 
 @Serializable
@@ -44,7 +50,7 @@ internal data class AnalyzeRequest(
 
 internal fun PetDto.toDomain(): Pet? {
     val species = Species.entries.firstOrNull { it.name == species } ?: return null
-    return Pet(id = id, name = name, species = species)
+    return Pet(id = id, name = name, species = species, breed = breed, birthDate = birthDate)
 }
 
 internal fun AnalysisDto.toDomain(): Analysis? {

@@ -127,7 +127,7 @@ private fun FriendsCard(
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text("함께하는 친구들", style = MaterialTheme.typography.titleMedium)
                     Text(
-                        if (pets.isEmpty()) "아직 등록한 친구가 없어요" else "${pets.size}명과 함께하고 있어요",
+                        if (pets.isEmpty()) "아직 등록한 친구가 없어요" else "${pets.size}마리와 함께하고 있어요",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

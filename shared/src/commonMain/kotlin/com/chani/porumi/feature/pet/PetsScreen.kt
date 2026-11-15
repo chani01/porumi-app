@@ -36,8 +36,14 @@ import com.chani.porumi.ui.components.PorumiTextField
 import com.chani.porumi.ui.components.PlainIconButton
 import com.chani.porumi.ui.components.PrimaryButton
 import com.chani.porumi.ui.components.SegmentedControl
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.todayIn
+import kotlin.time.Clock
+import com.chani.porumi.domain.profileLine
+import com.chani.porumi.ui.components.BirthDateField
 
-/** 마이 > 함께하는 친구들: 추가 / 이름·종 수정 / 삭제 (최소 한 명 유지) */
+/** 마이 > 함께하는 친구들: 추가 / 이름·종 수정 / 삭제 (최소 한 마리 유지) */
 @Composable
 fun PetManageScreen(
     onBack: () -> Unit,
@@ -50,6 +56,7 @@ fun PetManageScreen(
     var showAdd by remember { mutableStateOf(openAddDialog) }
     var editing by remember { mutableStateOf<Pet?>(null) }
     var deleting by remember { mutableStateOf<Pet?>(null) }
+    val today = remember { Clock.System.todayIn(TimeZone.currentSystemDefault()) }
 
     SettingsPage(title = "함께하는 친구들", onBack = onBack) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -59,7 +66,7 @@ fun PetManageScreen(
                         PetAvatar(pet, avatars[pet.id], 48.dp)
                         Column(Modifier.weight(1f).padding(start = 14.dp)) {
                             Text(pet.name, style = MaterialTheme.typography.titleMedium)
-                            Text(pet.species.label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(pet.profileLine(today), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                         PlainIconButton(Icons.Outlined.Edit, contentDescription = "수정", onClick = { editing = pet })
                         if (pets.size > 1) {
@@ -75,7 +82,7 @@ fun PetManageScreen(
             }
             if (pets.size == 1) {
                 Text(
-                    "아이는 최소 한 명 등록돼 있어야 해요.",
+                    "아이는 최소 한 마리 등록돼 있어야 해요.",
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -93,8 +100,8 @@ fun PetManageScreen(
             title = "아이 추가",
             confirmLabel = "등록",
             onDismiss = { showAdd = false },
-            onConfirm = { name, species ->
-                viewModel.addPet(name, species)
+            onConfirm = { name, species, breed, birthDate ->
+                viewModel.addPet(name, species, breed, birthDate)
                 showAdd = false
             },
         )
@@ -106,9 +113,11 @@ fun PetManageScreen(
             confirmLabel = "저장",
             initialName = pet.name,
             initialSpecies = pet.species,
+            initialBreed = pet.breed.orEmpty(),
+            initialBirthDate = pet.birthDate,
             onDismiss = { editing = null },
-            onConfirm = { name, species ->
-                viewModel.updatePet(pet.id, name, species)
+            onConfirm = { name, species, breed, birthDate ->
+                viewModel.updatePet(pet.id, name, species, breed, birthDate)
                 editing = null
             },
         )
@@ -135,18 +144,22 @@ fun PetEditDialog(
     title: String,
     confirmLabel: String,
     onDismiss: () -> Unit,
-    onConfirm: (String, Species) -> Unit,
+    onConfirm: (name: String, species: Species, breed: String?, birthDate: LocalDate?) -> Unit,
     initialName: String = "",
     initialSpecies: Species = Species.DOG,
+    initialBreed: String = "",
+    initialBirthDate: LocalDate? = null,
 ) {
     var name by remember { mutableStateOf(initialName) }
     var species by remember { mutableStateOf(initialSpecies) }
+    var breed by remember { mutableStateOf(initialBreed) }
+    var birthDate by remember { mutableStateOf(initialBirthDate) }
     PorumiAlertDialog(
         onDismissRequest = onDismiss,
         title = title,
         actions = listOf(
             AlertAction("취소", AlertActionStyle.Cancel, onClick = onDismiss),
-            AlertAction(confirmLabel, enabled = name.isNotBlank()) { onConfirm(name, species) },
+            AlertAction(confirmLabel, enabled = name.isNotBlank()) { onConfirm(name, species, breed, birthDate) },
         ),
     ) {
         SegmentedControl(
@@ -159,5 +172,11 @@ fun PetEditDialog(
             onValueChange = { if (it.length <= 30) name = it },
             placeholder = "이름",
         )
+        PorumiTextField(
+            value = breed,
+            onValueChange = { if (it.length <= 30) breed = it },
+            placeholder = if (species == Species.CAT) "품종 (예: 코리안 숏헤어)" else "품종 (예: 골든 리트리버)",
+        )
+        BirthDateField(value = birthDate, onValueChange = { birthDate = it })
     }
 }

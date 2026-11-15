@@ -24,6 +24,7 @@ import kotlinx.serialization.json.Json
 import kotlin.time.Clock
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
+import kotlinx.datetime.LocalDate
 
 enum class AuthState { Loading, SignedOut, SignedIn }
 
@@ -87,23 +88,31 @@ class PetRepository internal constructor(private val supabase: SupabaseClient) {
         _loaded.value = true
     }
 
-    suspend fun add(name: String, species: Species): Pet {
+    suspend fun add(name: String, species: Species, breed: String?, birthDate: LocalDate?): Pet {
         val pet = supabase.from("pets")
-            .insert(NewPetDto(name = name.trim(), species = species.name)) { select() }
+            .insert(petDto(name, species, breed, birthDate)) { select() }
             .decodeSingle<PetDto>()
             .toDomain()!!
         _pets.update { it + pet }
         return pet
     }
 
-    suspend fun update(id: String, name: String, species: Species) {
-        supabase.from("pets").update(NewPetDto(name = name.trim(), species = species.name)) {
+    suspend fun update(id: String, name: String, species: Species, breed: String?, birthDate: LocalDate?) {
+        val dto = petDto(name, species, breed, birthDate)
+        supabase.from("pets").update(dto) {
             filter { eq("id", id) }
         }
         _pets.update { list ->
-            list.map { if (it.id == id) it.copy(name = name.trim(), species = species) else it }
+            list.map { if (it.id == id) it.copy(name = dto.name, species = species, breed = dto.breed, birthDate = birthDate) else it }
         }
     }
+
+    private fun petDto(name: String, species: Species, breed: String?, birthDate: LocalDate?) = NewPetDto(
+        name = name.trim(),
+        species = species.name,
+        breed = breed?.trim()?.takeIf { it.isNotEmpty() },
+        birthDate = birthDate,
+    )
 
     suspend fun delete(id: String) {
         supabase.from("pets").delete { filter { eq("id", id) } }
