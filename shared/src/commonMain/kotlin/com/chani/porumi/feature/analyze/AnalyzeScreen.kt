@@ -62,6 +62,7 @@ import kotlin.time.Clock
 import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.material.icons.rounded.AddAPhoto
 import com.chani.porumi.ui.components.IconBubble
+import com.chani.porumi.ui.components.TabHeader
 
 /**
  * 기록 탭: 아이 고르기 → 사진 담기 → (선택) 오늘의 이야기 → 표정 분석.
@@ -149,14 +150,7 @@ fun AnalyzeScreen(
 @Composable
 private fun Header() {
     val today = remember { Clock.System.todayIn(TimeZone.currentSystemDefault()) }
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text(
-            "${today.monthDay()} ${today.dayOfWeek.korean}요일",
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.primary,
-        )
-        Text("오늘의 순간을\n남겨볼까요?", style = MaterialTheme.typography.headlineLarge)
-    }
+    TabHeader(eyebrow = "${today.monthDay()} ${today.dayOfWeek.korean}요일", title = "오늘의 순간을\n남겨볼까요?")
 }
 
 @Composable

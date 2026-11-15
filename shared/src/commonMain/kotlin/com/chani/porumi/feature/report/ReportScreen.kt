@@ -51,7 +51,6 @@ import org.koin.compose.viewmodel.koinViewModel
 import kotlin.math.abs
 import kotlin.math.roundToInt
 import com.chani.porumi.ui.components.Hairline
-import com.chani.porumi.ui.components.LargeTitle
 import com.chani.porumi.ui.components.PlainButton
 import com.chani.porumi.ui.theme.LocalPorumiColors
 import androidx.compose.material.icons.rounded.Insights
@@ -60,6 +59,7 @@ import com.chani.porumi.domain.profileLine
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
 import kotlin.time.Clock
+import com.chani.porumi.ui.components.TabHeader
 
 @Composable
 fun ReportScreen(
@@ -74,7 +74,11 @@ fun ReportScreen(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        LargeTitle("무드 리포트", Modifier.padding(horizontal = 16.dp))
+        TabHeader(
+            eyebrow = "무드 리포트",
+            title = "${state.selectedPet?.name ?: "우리 아이"}의 한 주는\n어땠을까요?",
+            modifier = Modifier.padding(horizontal = 16.dp),
+        )
         PetProfileHeader(
             pets = state.pets,
             selected = state.selectedPet,

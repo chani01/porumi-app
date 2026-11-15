@@ -346,10 +346,16 @@ fun IconBubble(
     }
 }
 
-/** 탭 화면 상단의 큰 제목 */
+/**
+ * 탭 화면 상단 머리글: 작은 복숭아색 머리말 + 말 거는 큰 문장(두 줄).
+ * 리포트·기록·마이 탭이 같은 높이와 말투를 갖도록 함께 쓴다 (홈은 로고).
+ */
 @Composable
-fun LargeTitle(text: String, modifier: Modifier = Modifier) {
-    Text(text, style = MaterialTheme.typography.headlineLarge, modifier = modifier)
+fun TabHeader(eyebrow: String, title: String, modifier: Modifier = Modifier) {
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(eyebrow, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+        Text(title, style = MaterialTheme.typography.headlineLarge, minLines = 2)
+    }
 }
 
 // ── 입력 컨트롤 ──────────────────────────────

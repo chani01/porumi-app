@@ -35,7 +35,6 @@ import com.chani.porumi.feature.legal.LegalDoc
 import com.chani.porumi.ui.components.ClickableCard
 import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.material.icons.automirrored.rounded.ArrowForwardIos
-import com.chani.porumi.ui.components.LargeTitle
 import com.chani.porumi.ui.theme.LocalPorumiColors
 import com.chani.porumi.ui.theme.Tints
 import androidx.compose.foundation.border
@@ -49,6 +48,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import com.chani.porumi.domain.Pet
 import com.chani.porumi.ui.components.PetAvatar
+import com.chani.porumi.ui.components.TabHeader
 
 @Composable
 fun MyScreen(
@@ -64,7 +64,11 @@ fun MyScreen(
     val pets by viewModel.pets.collectAsStateWithLifecycle()
     val avatars by viewModel.avatars.collectAsStateWithLifecycle()
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(vertical = 16.dp)) {
-        LargeTitle("마이", Modifier.padding(horizontal = 16.dp))
+        TabHeader(
+            eyebrow = "내 정보",
+            title = "반가워요,\n${guardianOf(pets)}",
+            modifier = Modifier.padding(horizontal = 16.dp),
+        )
         Spacer(Modifier.height(12.dp))
 
         // 계정 카드
@@ -110,6 +114,13 @@ fun MyScreen(
             SettingsRow("앱 버전", Icons.Outlined.Info, onClick = null, trailingText = AppInfo.VERSION, iconColor = Tints.Gray)
         }
     }
+}
+
+/** "모모 보호자님" / "모모·딸기 보호자님" / "모모 외 2마리 보호자님" */
+private fun guardianOf(pets: List<Pet>): String = when {
+    pets.isEmpty() -> "보호자님"
+    pets.size <= 2 -> pets.joinToString("·") { it.name } + " 보호자님"
+    else -> "${pets.first().name} 외 ${pets.size - 1}마리 보호자님"
 }
 
 /** 함께하는 친구들: 등록한 아이들 프로필을 가로로 보여주고, 누르면 관리 화면으로 */
