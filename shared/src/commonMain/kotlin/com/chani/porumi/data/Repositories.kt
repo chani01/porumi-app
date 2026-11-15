@@ -25,6 +25,7 @@ import kotlin.time.Clock
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 import kotlinx.datetime.LocalDate
+import com.chani.porumi.domain.NOTE_MAX_LENGTH
 
 enum class AuthState { Loading, SignedOut, SignedIn }
 
@@ -186,6 +187,16 @@ class AnalysisRepository internal constructor(private val supabase: SupabaseClie
             ?: throw AnalysisException("분석 결과를 읽지 못했어요.")
         _analyses.update { listOf(analysis) + it }
         return analysis
+    }
+
+    /** 오늘의 이야기 저장/수정. 빈 문자열이면 지운다 */
+    suspend fun updateNote(id: String, note: String?): String? {
+        val value = note?.trim()?.take(NOTE_MAX_LENGTH)?.takeIf { it.isNotEmpty() }
+        supabase.from("analyses").update({ set("note", value) }) {
+            filter { eq("id", id) }
+        }
+        _analyses.update { list -> list.map { if (it.id == id) it.copy(note = value) else it } }
+        return value
     }
 
     suspend fun delete(analysis: Analysis) {

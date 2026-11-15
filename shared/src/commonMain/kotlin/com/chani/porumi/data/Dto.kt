@@ -39,6 +39,7 @@ internal data class AnalysisDto(
     val cues: List<String> = emptyList(),
     val summary: String = "",
     @SerialName("taken_at") val takenAt: String,
+    val note: String? = null,
 )
 
 @Serializable
@@ -67,5 +68,6 @@ internal fun AnalysisDto.toDomain(): Analysis? {
         cues = cues,
         summary = summary,
         takenAt = Instant.parse(takenAt),
+        note = note?.takeIf { it.isNotBlank() },
     )
 }

@@ -67,4 +67,9 @@ data class Analysis(
     val cues: List<String>,
     val summary: String,
     val takenAt: Instant,
+    /** 사진과 함께 남긴 오늘의 이야기 (선택) */
+    val note: String? = null,
 )
+
+/** 오늘의 이야기 최대 글자 수 (DB 제약은 500자, 앱에서는 300자로 제한) */
+const val NOTE_MAX_LENGTH = 300

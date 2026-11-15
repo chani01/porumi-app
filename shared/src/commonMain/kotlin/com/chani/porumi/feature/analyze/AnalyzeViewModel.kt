@@ -19,6 +19,9 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.map
+import com.chani.porumi.domain.NOTE_MAX_LENGTH
+import com.chani.porumi.ui.components.latestPhotoByPet
 
 sealed interface AnalyzeStep {
     data object Pick : AnalyzeStep
@@ -31,9 +34,13 @@ sealed interface AnalyzeStep {
 data class AnalyzeUiState(
     val step: AnalyzeStep = AnalyzeStep.Pick,
     val pets: List<Pet> = emptyList(),
+    val avatars: Map<String, String> = emptyMap(),
     val selectedPetId: String? = null,
+    val note: String = "",
     val error: String? = null,
-)
+) {
+    val selectedPet: Pet? get() = pets.firstOrNull { it.id == selectedPetId }
+}
 
 class AnalyzeViewModel(
     private val analysisRepository: AnalysisRepository,
@@ -45,14 +52,22 @@ class AnalyzeViewModel(
     // 직접 고르지 않았으면 홈에서 선택돼 있던 아이가 기본값
     private val selectedPetId = MutableStateFlow<String?>(null)
     private val error = MutableStateFlow<String?>(null)
+    private val note = MutableStateFlow("")
+    private val avatars = analysisRepository.analyses.map(::latestPhotoByPet)
 
     val state: StateFlow<AnalyzeUiState> = combine(
-        step, petRepository.pets, selectedPetId, petFilter.selectedPet, error,
-    ) { step, pets, selected, current, error ->
+        combine(step, note, error, ::Triple),
+        petRepository.pets,
+        avatars,
+        selectedPetId,
+        petFilter.selectedPet,
+    ) { (step, note, error), pets, avatars, selected, current ->
         AnalyzeUiState(
             step = step,
             pets = pets,
+            avatars = avatars,
             selectedPetId = selected?.takeIf { id -> pets.any { it.id == id } } ?: current?.id,
+            note = note,
             error = error,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AnalyzeUiState())
@@ -83,6 +98,16 @@ class AnalyzeViewModel(
         selectedPetId.value = petId
     }
 
+    fun onNoteChange(text: String) {
+        note.value = text.take(NOTE_MAX_LENGTH)
+    }
+
+    /** 빠른 문구 칩: 이야기 끝에 이어 붙인다 */
+    fun appendToNote(phrase: String) {
+        val current = note.value.trimEnd()
+        onNoteChange(if (current.isEmpty()) phrase else "$current $phrase")
+    }
+
     fun analyze() {
         val ready = step.value as? AnalyzeStep.Ready ?: return
         error.value = null
@@ -90,9 +115,15 @@ class AnalyzeViewModel(
         viewModelScope.launch {
             try {
                 val petId = state.value.selectedPetId
-                val result = analysisRepository.analyze(ready.image, petId)
+                var result = analysisRepository.analyze(ready.image, petId)
                 // 분석한 아이를 홈/리포트에서도 선택 상태로
                 petId?.let(petFilter::select)
+                // 오늘의 이야기는 선택 사항: 저장에 실패해도 분석 결과는 보여주고 상세 화면에서 다시 남길 수 있다
+                if (note.value.isNotBlank()) {
+                    runCatching { analysisRepository.updateNote(result.id, note.value) }
+                        .onSuccess { saved -> result = result.copy(note = saved) }
+                        .onFailure { error.value = "이야기를 저장하지 못했어요. 기록 상세에서 다시 남겨 주세요." }
+                }
                 step.value = AnalyzeStep.Done(ready.image, result)
             } catch (e: AnalysisException) {
                 step.value = ready
@@ -106,6 +137,7 @@ class AnalyzeViewModel(
 
     fun reset() {
         step.value = AnalyzeStep.Pick
+        note.value = ""
         error.update { null }
     }
 
