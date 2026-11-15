@@ -47,6 +47,8 @@ import androidx.compose.material.icons.rounded.SupportAgent
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import com.chani.porumi.ui.components.IconBubble
+import androidx.compose.material.icons.rounded.ChatBubbleOutline
+import androidx.compose.ui.platform.LocalUriHandler
 
 @Composable
 fun MyScreen(
@@ -108,6 +110,9 @@ fun MyScreen(
             QuickTile(Icons.Rounded.Notifications, "알림 설정", "리마인더 · 리포트", onNotifications, Modifier.weight(1f))
             QuickTile(Icons.Rounded.SupportAgent, "고객센터", "자주 묻는 질문 · 문의", onSupport, Modifier.weight(1f))
         }
+
+        // 고객센터(문제 해결)와 역할을 나눈 의견 보내기: 흰 카드들 사이에서 눈에 띄는 옅은 복숭아색
+        FeedbackBanner(Modifier.padding(horizontal = 16.dp).padding(bottom = 4.dp))
 
         // 약관·정보는 아이콘 없이 조용하게
         SettingsSection(null) {
@@ -218,5 +223,42 @@ private fun FriendsCard(
                 }
             }
         }
+    }
+}
+
+/** 의견 보내기: 메일 앱을 "[Porumi] 의견 (v버전)" 제목으로 연다 */
+@Composable
+private fun FeedbackBanner(modifier: Modifier = Modifier) {
+    val uriHandler = LocalUriHandler.current
+    val colors = MaterialTheme.colorScheme
+    val shape = RoundedCornerShape(24.dp)
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .background(colors.primaryContainer)
+            .clickable {
+                runCatching {
+                    uriHandler.openUri("mailto:${AppInfo.SUPPORT_EMAIL}?subject=%5BPorumi%5D%20%EC%9D%98%EA%B2%AC%20%28v${AppInfo.VERSION}%29")
+                }
+            }
+            .padding(16.dp),
+    ) {
+        IconBubble(Icons.Rounded.ChatBubbleOutline, size = 44.dp, background = colors.surfaceContainer)
+        Column(Modifier.weight(1f).padding(horizontal = 14.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text("포루미에게 한마디", style = MaterialTheme.typography.titleMedium, color = colors.onPrimaryContainer)
+            Text(
+                "더 좋은 앱이 되도록 의견을 들려주세요",
+                style = MaterialTheme.typography.bodySmall,
+                color = colors.onPrimaryContainer.copy(alpha = 0.75f),
+            )
+        }
+        Icon(
+            Icons.AutoMirrored.Rounded.ArrowForwardIos,
+            contentDescription = "의견 보내기",
+            tint = colors.onPrimaryContainer.copy(alpha = 0.5f),
+            modifier = Modifier.size(14.dp),
+        )
     }
 }
