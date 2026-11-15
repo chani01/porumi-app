@@ -55,6 +55,13 @@ import androidx.compose.material.icons.rounded.PhotoCamera
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.chani.porumi.data.NotificationKind
 import com.chani.porumi.ui.components.IconBubble
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.rounded.ExpandLess
+import androidx.compose.material.icons.rounded.ExpandMore
+import androidx.compose.material3.Icon
+import com.chani.porumi.ui.components.PlainButton
 
 class NotificationsViewModel(private val repository: NotificationRepository) : ViewModel() {
 
@@ -64,12 +71,17 @@ class NotificationsViewModel(private val repository: NotificationRepository) : V
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
-    /** 화면을 열면 새로 불러오고, 본 알림은 읽음 처리 */
+    /** 이번에 화면을 열었을 때 안 읽은 상태였던 알림 (읽음 처리 후에도 이번엔 "새 알림"으로 표시) */
+    private val _freshIds = MutableStateFlow<Set<String>>(emptySet())
+    val freshIds: StateFlow<Set<String>> = _freshIds.asStateFlow()
+
+    /** 화면을 열면 새로 불러오고, 본 알림은 서버에 바로 읽음 처리 */
     fun open() {
         _error.value = null
         viewModelScope.launch {
             runCatching {
                 repository.refresh()
+                _freshIds.value = repository.notifications.value.filter { !it.read }.map { it.id }.toSet()
                 repository.markAllRead()
             }.onFailure { _error.value = "알림을 불러오지 못했어요. 네트워크를 확인해 주세요." }
         }
@@ -80,9 +92,11 @@ class NotificationsViewModel(private val repository: NotificationRepository) : V
 @Composable
 fun NotificationsScreen(onBack: () -> Unit, viewModel: NotificationsViewModel = koinViewModel()) {
     val items by viewModel.notifications.collectAsStateWithLifecycle()
+    val freshIds by viewModel.freshIds.collectAsStateWithLifecycle()
     val loaded by viewModel.loaded.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) { viewModel.open() }
+    var expandedKinds by remember { mutableStateOf(emptySet<NotificationKind>()) }
 
     Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         PorumiTopBar(title = "알림", onBack = onBack)
@@ -98,14 +112,82 @@ fun NotificationsScreen(onBack: () -> Unit, viewModel: NotificationsViewModel = 
                 if (error != null) {
                     item { Text(error!!, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error) }
                 }
-                items(items, key = { it.id }) { NotificationItem(it) }
+                // 종류별 묶음: 종류 순서 고정, 묶음마다 최신 PER_KIND 개만 보이고 나머지는 펼쳐 보기
+                items.groupBy { it.kind }
+                    .entries
+                    .sortedBy { it.key.ordinal }
+                    .forEach { (kind, list) ->
+                        item(key = "header-${kind.name}") { KindHeader(kind, list.size, list.count { it.id in freshIds }) }
+                        val expanded = kind in expandedKinds
+                        val shown = if (expanded) list else list.take(PER_KIND)
+                        items(shown, key = { it.id }) { NotificationItem(it, isNew = it.id in freshIds) }
+                        if (list.size > PER_KIND) {
+                            item(key = "more-${kind.name}") {
+                                MoreToggle(
+                                    expanded = expanded,
+                                    hidden = list.size - PER_KIND,
+                                    onClick = {
+                                        expandedKinds = if (expanded) expandedKinds - kind else expandedKinds + kind
+                                    },
+                                )
+                            }
+                        }
+                    }
             }
         }
     }
 }
 
+/** 묶음마다 처음에 보여줄 개수 */
+private const val PER_KIND = 3
+
+private val NotificationKind.label: String
+    get() = when (this) {
+        NotificationKind.REMINDER -> "기록 리마인더"
+        NotificationKind.WEEKLY_REPORT -> "주간 리포트"
+        NotificationKind.ANALYSIS -> "분석 결과"
+        NotificationKind.NOTICE -> "공지"
+        NotificationKind.EVENT -> "이벤트·혜택"
+    }
+
 @Composable
-private fun NotificationItem(item: AppNotification) {
+private fun KindHeader(kind: NotificationKind, total: Int, unread: Int) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        modifier = Modifier.fillMaxWidth().padding(start = 4.dp, top = 12.dp),
+    ) {
+        Text(kind.label, style = MaterialTheme.typography.titleSmall)
+        Text("$total", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.secondary)
+        if (unread > 0) {
+            Text(
+                "새 알림 $unread",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier
+                    .background(MaterialTheme.colorScheme.primary, CircleShape)
+                    .padding(horizontal = 8.dp, vertical = 2.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun MoreToggle(expanded: Boolean, hidden: Int, onClick: () -> Unit) {
+    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+        PlainButton(onClick = onClick, textStyle = MaterialTheme.typography.labelMedium) {
+            Text(if (expanded) "접기" else "${hidden}개 더 보기")
+            Icon(
+                if (expanded) Icons.Rounded.ExpandLess else Icons.Rounded.ExpandMore,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun NotificationItem(item: AppNotification, isNew: Boolean) {
     val colors = MaterialTheme.colorScheme
     ClickableCard(onClick = null) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -115,10 +197,10 @@ private fun NotificationItem(item: AppNotification) {
                     Text(
                         item.title,
                         style = MaterialTheme.typography.titleSmall,
-                        fontWeight = if (item.read) FontWeight.Medium else FontWeight.Bold,
+                        fontWeight = if (isNew) FontWeight.Bold else FontWeight.Medium,
                         modifier = Modifier.weight(1f),
                     )
-                    if (!item.read) {
+                    if (isNew) {
                         Box(Modifier.padding(start = 6.dp).size(8.dp).background(colors.primary, CircleShape))
                     }
                 }
