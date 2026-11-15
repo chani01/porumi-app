@@ -48,6 +48,15 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
 import com.chani.porumi.domain.profileLine
 import com.chani.porumi.domain.breedOrSpecies
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Notifications
+import androidx.compose.material.icons.rounded.NotificationsActive
+import com.chani.porumi.data.NotificationRepository
+import com.chani.porumi.ui.components.CircleIconButton
+import org.koin.compose.koinInject
 
 private const val GAP = 6
 
@@ -58,6 +67,7 @@ fun HomeScreen(
     onWeekClick: () -> Unit,
     onAnalyzeClick: () -> Unit,
     onAddPet: () -> Unit,
+    onNotifications: () -> Unit,
     viewModel: HomeViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -86,6 +96,7 @@ fun HomeScreen(
             contentPadding = PaddingValues(bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(GAP.dp),
         ) {
+            item(key = "title") { HomeTitleBar(onNotifications) }
             item(key = "profile") {
                 val pet = state.selectedPet
                 PetProfileHeader(
@@ -98,7 +109,7 @@ fun HomeScreen(
                     } else "",
                     onSelect = viewModel::selectPet,
                     onAddPet = onAddPet,
-                    modifier = Modifier.padding(top = 12.dp),
+                    modifier = Modifier.padding(top = 4.dp),
                 )
             }
             item(key = "week") {
@@ -119,6 +130,47 @@ fun HomeScreen(
                 items(rows, key = { row -> row.items.first().id }) { row ->
                     Box(Modifier.padding(horizontal = 16.dp)) { FeedRowView(row, onPhotoClick) }
                 }
+            }
+        }
+    }
+}
+
+// ── 상단: porumi. 로고 + 알림 ──────────────────────────────
+
+@Composable
+private fun HomeTitleBar(onNotifications: () -> Unit, notifications: NotificationRepository = koinInject()) {
+    val items by notifications.notifications.collectAsStateWithLifecycle()
+    val hasUnread = items.any { !it.read }
+    val colors = MaterialTheme.colorScheme
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth().padding(start = 20.dp, end = 16.dp, top = 8.dp),
+    ) {
+        Text(
+            buildAnnotatedString {
+                append("porumi")
+                withStyle(SpanStyle(color = colors.primary)) { append(".") }
+            },
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = (-1).sp,
+            modifier = Modifier.weight(1f),
+        )
+        Box {
+            CircleIconButton(
+                if (hasUnread) Icons.Rounded.NotificationsActive else Icons.Rounded.Notifications,
+                contentDescription = if (hasUnread) "알림 (새 알림 있음)" else "알림",
+                onClick = onNotifications,
+            )
+            if (hasUnread) {
+                Box(
+                    Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(top = 2.dp, end = 2.dp)
+                        .size(10.dp)
+                        .border(2.dp, colors.surfaceContainer, CircleShape)
+                        .background(colors.primary, CircleShape),
+                )
             }
         }
     }

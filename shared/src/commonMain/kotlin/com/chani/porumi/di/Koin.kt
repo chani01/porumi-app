@@ -16,6 +16,8 @@ import com.chani.porumi.feature.home.HomeViewModel
 import com.chani.porumi.feature.pet.PetsViewModel
 import com.chani.porumi.feature.report.ReportViewModel
 import com.chani.porumi.feature.MainViewModel
+import com.chani.porumi.data.NotificationRepository
+import com.chani.porumi.feature.notifications.NotificationsViewModel
 import org.koin.core.context.startKoin
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
@@ -28,6 +30,7 @@ val appModule = module {
     single { AnalysisRepository(get()) }
     single { PetFilter(get()) }
     single { NotificationSettingsRepository() }
+    single { NotificationRepository(get()) }
 
     viewModelOf(::MainViewModel)
     viewModelOf(::AuthViewModel)
@@ -39,6 +42,7 @@ val appModule = module {
     viewModelOf(::MyViewModel)
     viewModelOf(::AccountViewModel)
     viewModelOf(::NotificationSettingsViewModel)
+    viewModelOf(::NotificationsViewModel)
 }
 
 /** Android(Application.onCreate) / iOS(MainViewController) 에서 한 번 호출 */

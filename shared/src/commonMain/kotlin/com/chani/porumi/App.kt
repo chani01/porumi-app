@@ -51,6 +51,7 @@ import com.chani.porumi.feature.analyze.AnalyzeScreen
 import com.chani.porumi.feature.auth.AuthScreen
 import com.chani.porumi.feature.detail.DetailScreen
 import com.chani.porumi.feature.home.HomeScreen
+import com.chani.porumi.feature.notifications.NotificationsScreen
 import com.chani.porumi.feature.legal.LegalDoc
 import com.chani.porumi.feature.legal.LegalScreen
 import com.chani.porumi.feature.pet.PetManageScreen
@@ -81,6 +82,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Serializable data object NotificationRoute
 @Serializable data object SupportRoute
 @Serializable data object LicensesRoute
+@Serializable data object NotificationsRoute
 @Serializable data class DetailRoute(val id: String)
 @Serializable data class LegalRoute(val doc: String)
 
@@ -189,8 +191,10 @@ private fun MainScaffold() {
                     onWeekClick = { navController.navigateTab(ReportRoute) },
                     onAnalyzeClick = { navController.navigateTab(RecordRoute) },
                     onAddPet = { navController.navigate(PetManageRoute(openAdd = true)) },
+                    onNotifications = { navController.navigate(NotificationsRoute) },
                 )
             }
+            composable<NotificationsRoute> { NotificationsScreen(onBack = { navController.popBackStack() }) }
             composable<ReportRoute> {
                 ReportScreen(
                     onPhotoClick = { navController.navigate(DetailRoute(it)) },

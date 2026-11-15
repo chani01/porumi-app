@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import com.chani.porumi.data.NotificationRepository
 
 enum class AppState {
     Loading,
@@ -31,6 +32,7 @@ class MainViewModel(
     authRepository: AuthRepository,
     private val petRepository: PetRepository,
     private val analysisRepository: AnalysisRepository,
+    private val notificationRepository: NotificationRepository,
     private val petFilter: PetFilter,
 ) : ViewModel() {
 
@@ -44,6 +46,7 @@ class MainViewModel(
                 AuthState.SignedOut -> {
                     petRepository.clear()
                     analysisRepository.clear()
+                    notificationRepository.clear()
                     petFilter.clear()
                 }
                 AuthState.Loading -> Unit
@@ -70,6 +73,7 @@ class MainViewModel(
         viewModelScope.launch {
             runCatching { petRepository.refresh() }.onFailure { loadFailed.value = true }
             runCatching { analysisRepository.refresh() }
+            runCatching { notificationRepository.refresh() }
         }
     }
 }
