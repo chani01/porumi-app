@@ -40,3 +40,6 @@ keystore.properties
 DerivedData/
 iosApp/build/
 *.hprof
+
+# Claude Code 작업용 worktree
+.claude/worktrees/
