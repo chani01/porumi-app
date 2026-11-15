@@ -59,6 +59,14 @@ import com.chani.porumi.ui.components.CircleIconButton
 import org.koin.compose.koinInject
 import androidx.compose.material.icons.rounded.Pets
 import com.chani.porumi.ui.components.IconBubble
+import androidx.compose.material.icons.automirrored.rounded.ArrowForwardIos
+import androidx.compose.material.icons.rounded.Insights
+import androidx.compose.material3.Icon
+import androidx.compose.ui.draw.shadow
+import com.chani.porumi.domain.WeeklyMoodCalculator
+import com.chani.porumi.ui.components.Hairline
+import com.chani.porumi.ui.theme.LocalChartColors
+import com.chani.porumi.ui.theme.LocalPorumiColors
 
 private const val GAP = 6
 
@@ -117,11 +125,12 @@ fun HomeScreen(
             item(key = "week") {
                 val week = state.recent
                 if (week != null && state.today != null) {
-                    WeekStripCard(
+                    MoodSummaryCard(
                         week = week,
                         today = state.today!!,
-                        title = "최근 7일 ${state.selectedPet?.name ?: "우리 아이"}의 기분",
-                        onClick = onWeekClick,
+                        petName = state.selectedPet?.name ?: "우리 아이",
+                        onOpenReport = onWeekClick,
+                        onRecord = onAnalyzeClick,
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                     )
                 }
@@ -178,60 +187,155 @@ private fun HomeTitleBar(onNotifications: () -> Unit, notifications: Notificatio
     }
 }
 
-// ── 이번 주 기분 스트립 ──────────────────────────────
+// ── 최근 7일 기분 요약 ──────────────────────────────
 
+/**
+ * 홈 상단 요약: 한 줄 결론(기분 단계) + 가장 많이 지은 표정 + 기록 일수·추세 + 작은 7일 점.
+ * 누르면 리포트로 이동. 오늘 기록이 없으면 아래에 기록하기 안내가 붙는다.
+ */
 @Composable
-fun WeekStripCard(
+fun MoodSummaryCard(
     week: WeeklyMood,
     today: LocalDate,
-    title: String,
-    onClick: (() -> Unit)?,
+    petName: String,
+    onOpenReport: () -> Unit,
+    onRecord: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    ClickableCard(onClick = onClick, modifier = modifier) {
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    val colors = MaterialTheme.colorScheme
+    val extra = LocalPorumiColors.current
+    val level = week.level
+    val recordedDays = week.days.count { it.count > 0 }
+    val recordedToday = week.days.any { it.date == today && it.count > 0 }
+    val shape = RoundedCornerShape(24.dp)
+
+    Column(
+        modifier
+            .fillMaxWidth()
+            .shadow(12.dp, shape, ambientColor = extra.cardShadow, spotColor = extra.cardShadow)
+            .clip(shape)
+            .background(colors.surfaceContainer),
+    ) {
+        Column(
+            Modifier.fillMaxWidth().clickable(onClick = onOpenReport).padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-                val level = week.level
-                Text(
-                    if (level != null) "${level.emoji} ${level.label}" else "기록 없음",
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-            }
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                week.days.forEach { day ->
-                    val isToday = day.date == today
-                    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
+                if (level != null) {
+                    Box(
+                        Modifier.size(56.dp).background(colors.primaryContainer, CircleShape),
+                        contentAlignment = Alignment.Center,
+                    ) { Text(level.emoji, fontSize = 30.sp) }
+                } else {
+                    IconBubble(Icons.Rounded.Insights, size = 56.dp)
+                }
+                Column(Modifier.weight(1f).padding(horizontal = 14.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(
+                        if (level != null) "최근 7일 $petName${WeeklyMoodCalculator.topicParticle(petName)} '${level.label}'"
+                        else "최근 7일 기록이 없어요",
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    summaryLine(week, petName)?.let {
+                        Text(it, style = MaterialTheme.typography.bodyMedium, color = colors.onSurfaceVariant)
+                    }
+                    if (recordedDays > 0) {
                         Text(
-                            day.date.dayOfWeek.korean,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = if (isToday) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal,
+                            listOfNotNull("기록 ${recordedDays}일", trendLabel(week)).joinToString(" · "),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = colors.primary,
                         )
-                        Spacer(Modifier.height(4.dp))
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier
-                                .size(36.dp)
-                                .clip(CircleShape)
-                                .background(
-                                    if (isToday) MaterialTheme.colorScheme.primaryContainer
-                                    else MaterialTheme.colorScheme.surfaceVariant
-                                )
-                                .then(if (isToday) Modifier.border(2.dp, MaterialTheme.colorScheme.primary, CircleShape) else Modifier),
-                        ) {
-                            if (day.emotion != null) {
-                                Text(day.emotion.emoji, fontSize = 18.sp)
-                            } else {
-                                Text("·", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            }
-                        }
                     }
                 }
+                Icon(
+                    Icons.AutoMirrored.Rounded.ArrowForwardIos,
+                    contentDescription = "리포트 보기",
+                    tint = extra.tertiaryLabel,
+                    modifier = Modifier.size(14.dp),
+                )
+            }
+            WeekDots(week, today)
+        }
+        if (!recordedToday) {
+            Box(Modifier.fillMaxWidth().height(Hairline).background(extra.separator))
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 12.dp, top = 10.dp, bottom = 10.dp),
+            ) {
+                Text(
+                    "오늘은 아직 기록이 없어요",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = colors.onSurfaceVariant,
+                    modifier = Modifier.weight(1f),
+                )
+                Text(
+                    "기록하기",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = colors.onPrimary,
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .background(colors.primary)
+                        .clickable(onClick = onRecord)
+                        .padding(horizontal = 14.dp, vertical = 8.dp),
+                )
             }
         }
+    }
+}
+
+/** 작은 7일 점: 기록한 날은 기분 색(좋음/예민/보통), 없는 날은 빈 점, 오늘은 링 */
+@Composable
+private fun WeekDots(week: WeeklyMood, today: LocalDate) {
+    val colors = MaterialTheme.colorScheme
+    val chart = LocalChartColors.current
+    Row(Modifier.fillMaxWidth()) {
+        week.days.forEach { day ->
+            val isToday = day.date == today
+            val score = day.score
+            val dot = when {
+                score == null -> colors.outline
+                score > 0.05f -> chart.positive
+                score < -0.05f -> chart.negative
+                else -> chart.neutral
+            }
+            Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+                Box(
+                    Modifier
+                        .size(18.dp)
+                        .then(if (isToday) Modifier.border(2.dp, colors.primary, CircleShape) else Modifier),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Box(Modifier.size(10.dp).background(dot, CircleShape))
+                }
+                Text(
+                    day.date.dayOfWeek.korean,
+                    fontSize = 11.sp,
+                    lineHeight = 14.sp,
+                    fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal,
+                    color = if (isToday) colors.primary else colors.secondary,
+                    modifier = Modifier.padding(top = 4.dp),
+                )
+            }
+        }
+    }
+}
+
+/** 가장 많이 지은 표정 (동점이면 생략) */
+private fun summaryLine(week: WeeklyMood, petName: String): String? {
+    if (week.totalCount == 0) return "$petName${WeeklyMoodCalculator.topicParticle(petName)} 어떤 표정을 짓고 있을까요?"
+    val max = week.distribution.values.maxOrNull() ?: return null
+    val top = week.distribution.filterValues { it == max }.keys.singleOrNull() ?: return null
+    return "'${top.label}' 표정을 가장 많이 지었어요"
+}
+
+/** 그 전 7일과 비교한 추세 */
+private fun trendLabel(week: WeeklyMood): String? {
+    val avg = week.averageScore ?: return null
+    val prev = week.previousAverageScore ?: return null
+    return when {
+        avg - prev >= 0.3f -> "지난 7일보다 ↑"
+        prev - avg >= 0.3f -> "지난 7일보다 ↓"
+        else -> "지난 7일과 비슷"
     }
 }
 
