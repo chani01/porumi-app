@@ -422,14 +422,15 @@ entrypoint = "./functions/analyze-photo/index.ts"
 enabled = true
 verify_jwt = false  # 함수 내부에서 auth.getUser 로 직접 검증
 import_map = "./functions/delete-account/deno.json"
-
-[functions.naver-userinfo]
-enabled = true
-verify_jwt = false  # Supabase Auth 서버가 네이버 access token 으로 호출 (사용자 JWT 아님)
-import_map = "./functions/naver-userinfo/deno.json"
 # Uncomment to specify a custom file path to the entrypoint.
 # Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
 entrypoint = "./functions/delete-account/index.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/delete-account/*.html" ]
+
+[functions.naver-userinfo]
+enabled = true
+verify_jwt = false  # Supabase Auth 서버가 네이버 access token 으로 호출 (사용자 JWT 아님)
+import_map = "./functions/naver-userinfo/deno.json"
+entrypoint = "./functions/naver-userinfo/index.ts"
