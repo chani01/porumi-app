@@ -61,9 +61,6 @@ import kotlinx.datetime.todayIn
 import kotlin.time.Clock
 import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.material.icons.rounded.AddAPhoto
-import androidx.compose.material.icons.rounded.Face
-import androidx.compose.material.icons.rounded.WbSunny
-import androidx.compose.material.icons.rounded.Pets
 import com.chani.porumi.ui.components.IconBubble
 
 /**
@@ -360,16 +357,20 @@ private fun TipsCard() {
             Text("이런 사진이 잘 읽혀요", style = MaterialTheme.typography.titleMedium)
             Row(Modifier.fillMaxWidth()) {
                 listOf(
-                    Triple(Icons.Rounded.Face, "정면 얼굴", "눈·귀·입이 보이게"),
-                    Triple(Icons.Rounded.WbSunny, "밝은 곳", "그림자 없이 환하게"),
-                    Triple(Icons.Rounded.Pets, "한 마리만", "한 장에 한 아이"),
-                ).forEach { (icon, title, desc) ->
+                    // 이 카드만 예외적으로 이모지를 쓴다 (사용자 요청)
+                    Triple("🐶", "정면 얼굴", "눈·귀·입이 보이게"),
+                    Triple("☀️", "밝은 곳", "그림자 없이 환하게"),
+                    Triple("🐾", "한 마리만", "한 장에 한 아이"),
+                ).forEach { (emoji, title, desc) ->
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(4.dp),
                         modifier = Modifier.weight(1f),
                     ) {
-                        IconBubble(icon, size = 52.dp)
+                        Box(
+                            Modifier.size(52.dp).background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
+                            contentAlignment = Alignment.Center,
+                        ) { Text(emoji, fontSize = 24.sp) }
                         Spacer(Modifier.height(2.dp))
                         Text(title, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
                         Text(desc, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
