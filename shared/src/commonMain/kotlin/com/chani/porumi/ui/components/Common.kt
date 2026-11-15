@@ -69,7 +69,7 @@ fun AnalysisResultContent(analysis: Analysis, petName: String?, modifier: Modifi
             Spacer(Modifier.width(12.dp))
             Column {
                 Text(
-                    "${analysis.species.emoji} ${petName ?: analysis.species.label}",
+                    petName ?: analysis.species.label,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -121,7 +121,7 @@ fun AnalysisResultContent(analysis: Analysis, petName: String?, modifier: Modifi
 
         if (analysis.cues.isNotEmpty()) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text("💬 이렇게 읽었어요", style = MaterialTheme.typography.titleMedium)
+                Text("이렇게 읽었어요", style = MaterialTheme.typography.titleMedium)
                 analysis.cues.forEach { cue ->
                     Text("• $cue", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }

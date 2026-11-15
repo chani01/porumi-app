@@ -57,6 +57,8 @@ import androidx.compose.material.icons.rounded.NotificationsActive
 import com.chani.porumi.data.NotificationRepository
 import com.chani.porumi.ui.components.CircleIconButton
 import org.koin.compose.koinInject
+import androidx.compose.material.icons.rounded.Pets
+import com.chani.porumi.ui.components.IconBubble
 
 private const val GAP = 6
 
@@ -305,7 +307,7 @@ private fun EmptyFeed(onAnalyzeClick: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Text("🐶🐱", fontSize = 48.sp)
+        IconBubble(Icons.Rounded.Pets, size = 88.dp)
         Text("아직 기록이 없어요", style = MaterialTheme.typography.titleLarge)
         Text(
             "사진을 올리면 표정을 읽어서 기분을 기록해 드려요.",

@@ -332,6 +332,20 @@ fun PorumiTabBar(items: List<TabItem>, selectedIndex: Int, onSelect: (Int) -> Un
     }
 }
 
+/** 옅은 복숭아색 동그라미 안의 아이콘 (빈 화면·안내용 그림 자리) */
+@Composable
+fun IconBubble(
+    icon: ImageVector,
+    size: Dp,
+    modifier: Modifier = Modifier,
+    background: Color = MaterialTheme.colorScheme.primaryContainer,
+    tint: Color = MaterialTheme.colorScheme.primary,
+) {
+    Box(modifier.size(size).background(background, CircleShape), contentAlignment = Alignment.Center) {
+        Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(size * 0.46f))
+    }
+}
+
 /** 탭 화면 상단의 큰 제목 */
 @Composable
 fun LargeTitle(text: String, modifier: Modifier = Modifier) {

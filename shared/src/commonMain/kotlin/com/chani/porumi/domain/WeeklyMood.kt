@@ -118,7 +118,7 @@ object WeeklyMoodCalculator {
     /** 리포트 화면의 한 줄 코멘트 (규칙 기반). periodLabel 예: "최근 7일" */
     fun comment(mood: WeeklyMood, petName: String?, periodLabel: String = "최근 7일"): String {
         val who = petName ?: "우리 아이"
-        val avg = mood.averageScore ?: return "${periodLabel} 동안 기록이 없어요. ${who}의 표정을 남겨볼까요? 📸"
+        val avg = mood.averageScore ?: return "${periodLabel} 동안 기록이 없어요. ${who}의 표정을 남겨볼까요?"
         val prev = mood.previousAverageScore
         // 동점이면 "가장 많이"라고 말할 수 없으므로 기분 등급으로 대신 표현
         val maxCount = mood.distribution.values.maxOrNull() ?: 0
@@ -133,7 +133,7 @@ object WeeklyMoodCalculator {
             append("$periodLabel ${who}${topicParticle(who)} ")
             append(if (top != null) "'${top.label}' 표정을 가장 많이 지었어요" else "전반적으로 기분이 '${MoodLevel.from(avg).label}'이었어요")
             if (trend != null) append(". $trend")
-            append(if (avg < -0.4f) ". 조금 더 다정하게 챙겨주세요 💛" else " ✨")
+            append(if (avg < -0.4f) ". 조금 더 다정하게 챙겨주세요." else ".")
         }
     }
 

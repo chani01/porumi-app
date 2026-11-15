@@ -26,6 +26,9 @@ import com.chani.porumi.ui.components.PrimaryButton
 import com.chani.porumi.ui.components.SegmentedControl
 import kotlinx.datetime.LocalDate
 import com.chani.porumi.ui.components.BirthDateField
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Pets
+import com.chani.porumi.ui.components.IconBubble
 
 /** 아이가 한 마리도 없을 때 보여주는 첫 등록 화면 */
 @Composable
@@ -40,7 +43,7 @@ fun FirstPetScreen(viewModel: PetsViewModel = koinViewModel()) {
         modifier = Modifier.fillMaxSize().safeDrawingPadding().padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
     ) {
-        Text(species.emoji, fontSize = 56.sp)
+        IconBubble(Icons.Rounded.Pets, size = 88.dp)
         Text("우리 아이를 소개해 주세요", style = MaterialTheme.typography.headlineSmall)
         Text(
             "아이별로 표정을 기록하고 최근 7일 기분을 보여드려요.",
@@ -48,7 +51,7 @@ fun FirstPetScreen(viewModel: PetsViewModel = koinViewModel()) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         SegmentedControl(
-            options = Species.entries.map { "${it.emoji} ${it.label}" },
+            options = Species.entries.map { it.label },
             selectedIndex = Species.entries.indexOf(species),
             onSelect = { species = Species.entries[it] },
         )

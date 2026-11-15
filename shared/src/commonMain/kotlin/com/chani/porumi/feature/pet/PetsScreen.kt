@@ -163,7 +163,7 @@ fun PetEditDialog(
         ),
     ) {
         SegmentedControl(
-            options = Species.entries.map { "${it.emoji} ${it.label}" },
+            options = Species.entries.map { it.label },
             selectedIndex = Species.entries.indexOf(species),
             onSelect = { species = Species.entries[it] },
         )

@@ -34,6 +34,13 @@ import com.chani.porumi.ui.components.CheckCircle
 import com.chani.porumi.ui.components.PorumiTextField
 import com.chani.porumi.ui.components.PlainButton
 import com.chani.porumi.ui.components.PrimaryButton
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Pets
+import androidx.compose.material3.Icon
 
 @Composable
 fun AuthScreen(viewModel: AuthViewModel = koinViewModel()) {
@@ -50,7 +57,12 @@ fun AuthScreen(viewModel: AuthViewModel = koinViewModel()) {
         verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text("🐶🐱", fontSize = 56.sp)
+        Box(
+            Modifier.size(88.dp).background(MaterialTheme.colorScheme.primary, CircleShape),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(Icons.Rounded.Pets, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(48.dp))
+        }
         Text("Porumi", style = MaterialTheme.typography.headlineLarge)
         Text(
             "우리 아이 표정으로 읽는 하루 기분",

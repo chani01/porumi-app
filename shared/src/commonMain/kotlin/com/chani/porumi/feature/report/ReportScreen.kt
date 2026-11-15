@@ -54,6 +54,8 @@ import com.chani.porumi.ui.components.Hairline
 import com.chani.porumi.ui.components.LargeTitle
 import com.chani.porumi.ui.components.PlainButton
 import com.chani.porumi.ui.theme.LocalPorumiColors
+import androidx.compose.material.icons.rounded.Insights
+import com.chani.porumi.ui.components.IconBubble
 
 @Composable
 fun ReportScreen(
@@ -117,7 +119,8 @@ private fun SummaryCard(mood: WeeklyMood, comment: String) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             val level = mood.level
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(level?.emoji ?: "🫥", fontSize = 40.sp)
+                if (level != null) Text(level.emoji, fontSize = 40.sp)
+                else IconBubble(Icons.Rounded.Insights, size = 52.dp)
                 Spacer(Modifier.width(12.dp))
                 Column {
                     Text(level?.label ?: "기록 없음", style = MaterialTheme.typography.titleLarge)

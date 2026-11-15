@@ -134,7 +134,7 @@ private fun StorySection(note: String?, error: String?, onEdit: () -> Unit, modi
             ClickableCard(onClick = onEdit) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("📝 오늘의 이야기", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                        Text("오늘의 이야기", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
                         Icon(
                             Icons.Outlined.Edit,
                             contentDescription = "이야기 수정",

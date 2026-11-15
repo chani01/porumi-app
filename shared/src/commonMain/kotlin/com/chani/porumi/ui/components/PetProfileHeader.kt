@@ -41,6 +41,7 @@ import com.chani.porumi.domain.Analysis
 import com.chani.porumi.domain.Pet
 import com.chani.porumi.ui.theme.LocalPorumiColors
 import com.chani.porumi.domain.breedOrSpecies
+import androidx.compose.material.icons.rounded.Pets
 
 private val HEADER_HEIGHT = 80.dp
 
@@ -62,7 +63,12 @@ fun PetAvatar(pet: Pet, photoPath: String?, size: Dp, modifier: Modifier = Modif
         if (photoPath != null) {
             PetPhoto(photoPath, Modifier.fillMaxSize(), contentDescription = pet.name)
         } else {
-            Text(pet.species.emoji, fontSize = (size.value * 0.5f).sp)
+            Icon(
+                Icons.Rounded.Pets,
+                contentDescription = pet.name,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(size * 0.5f),
+            )
         }
     }
 }

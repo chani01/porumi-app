@@ -258,7 +258,7 @@ private fun ConfigMissingScreen() {
         Modifier.fillMaxSize().padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
     ) {
-        Text("⚙️ Supabase 설정이 필요해요", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        Text("Supabase 설정이 필요해요", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         Text(
             "프로젝트 루트의 local.properties 에 아래 두 줄을 추가한 뒤 다시 빌드해 주세요.\n\n" +
                 "supabase.url=https://<project-ref>.supabase.co\n" +

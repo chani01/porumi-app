@@ -13,12 +13,12 @@ import kotlin.time.Clock
 import kotlin.time.Instant
 
 /** 알림 종류. DB 의 notifications.kind 체크 제약과 같은 값 */
-enum class NotificationKind(val emoji: String) {
-    REMINDER("📸"),
-    WEEKLY_REPORT("📊"),
-    ANALYSIS("✨"),
-    NOTICE("📢"),
-    EVENT("🎁"),
+enum class NotificationKind {
+    REMINDER,
+    WEEKLY_REPORT,
+    ANALYSIS,
+    NOTICE,
+    EVENT,
 }
 
 data class AppNotification(

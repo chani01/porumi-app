@@ -4,9 +4,9 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.periodUntil
 import kotlin.time.Instant
 
-enum class Species(val label: String, val emoji: String) {
-    DOG("강아지", "🐶"),
-    CAT("고양이", "🐱"),
+enum class Species(val label: String) {
+    DOG("강아지"),
+    CAT("고양이"),
 }
 
 /**

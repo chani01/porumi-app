@@ -60,6 +60,11 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
 import kotlin.time.Clock
 import org.koin.compose.viewmodel.koinViewModel
+import androidx.compose.material.icons.rounded.AddAPhoto
+import androidx.compose.material.icons.rounded.Face
+import androidx.compose.material.icons.rounded.WbSunny
+import androidx.compose.material.icons.rounded.Pets
+import com.chani.porumi.ui.components.IconBubble
 
 /**
  * 기록 탭: 아이 고르기 → 사진 담기 → (선택) 오늘의 이야기 → 표정 분석.
@@ -133,7 +138,7 @@ fun AnalyzeScreen(
                     modifier = Modifier.fillMaxWidth(),
                 ) { Text(if (state.note.isBlank()) "표정 분석하기" else "표정 분석하고 이야기 저장하기") }
                 is AnalyzeStep.Analyzing -> Text(
-                    "표정을 읽고 있어요… 귀, 눈, 입 모양을 살펴보는 중이에요 👀",
+                    "표정을 읽고 있어요… 귀, 눈, 입 모양을 살펴보는 중이에요",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
@@ -250,10 +255,7 @@ private fun PhotoDropCard(loading: Boolean, onGallery: () -> Unit, onCamera: () 
                 ActivityIndicator(size = 32.dp)
             } else {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Box(
-                        Modifier.size(84.dp).background(colors.surfaceContainer, CircleShape),
-                        contentAlignment = Alignment.Center,
-                    ) { Text("📸", fontSize = 40.sp) }
+                    IconBubble(Icons.Rounded.AddAPhoto, size = 84.dp, background = colors.surfaceContainer)
                     Text("오늘의 표정을 담아 주세요", style = MaterialTheme.typography.titleMedium, color = colors.onPrimaryContainer)
                     Text(
                         "눌러서 앨범에서 고를 수 있어요",
@@ -318,7 +320,7 @@ private fun StoryCard(note: String, petName: String?, enabled: Boolean, onChange
     ClickableCard(onClick = null) {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("📝 오늘의 이야기", style = MaterialTheme.typography.titleMedium)
+                Text("오늘의 이야기", style = MaterialTheme.typography.titleMedium)
                 Text(
                     "선택",
                     style = MaterialTheme.typography.labelSmall,
@@ -344,7 +346,7 @@ private fun StoryCard(note: String, petName: String?, enabled: Boolean, onChange
 private fun SavedStoryCard(note: String) {
     ClickableCard(onClick = null) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("📝 오늘의 이야기", style = MaterialTheme.typography.titleMedium)
+            Text("오늘의 이야기", style = MaterialTheme.typography.titleMedium)
             Text(note, style = MaterialTheme.typography.bodyLarge)
         }
     }
@@ -358,19 +360,16 @@ private fun TipsCard() {
             Text("이런 사진이 잘 읽혀요", style = MaterialTheme.typography.titleMedium)
             Row(Modifier.fillMaxWidth()) {
                 listOf(
-                    Triple("🐶", "정면 얼굴", "눈·귀·입이 보이게"),
-                    Triple("☀️", "밝은 곳", "그림자 없이 환하게"),
-                    Triple("🐾", "한 마리만", "한 장에 한 아이"),
-                ).forEach { (emoji, title, desc) ->
+                    Triple(Icons.Rounded.Face, "정면 얼굴", "눈·귀·입이 보이게"),
+                    Triple(Icons.Rounded.WbSunny, "밝은 곳", "그림자 없이 환하게"),
+                    Triple(Icons.Rounded.Pets, "한 마리만", "한 장에 한 아이"),
+                ).forEach { (icon, title, desc) ->
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(4.dp),
                         modifier = Modifier.weight(1f),
                     ) {
-                        Box(
-                            Modifier.size(52.dp).background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
-                            contentAlignment = Alignment.Center,
-                        ) { Text(emoji, fontSize = 24.sp) }
+                        IconBubble(icon, size = 52.dp)
                         Spacer(Modifier.height(2.dp))
                         Text(title, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
                         Text(desc, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)

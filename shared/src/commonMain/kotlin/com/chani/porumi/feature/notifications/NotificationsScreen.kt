@@ -45,6 +45,16 @@ import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
 import org.koin.compose.viewmodel.koinViewModel
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.AutoAwesome
+import androidx.compose.material.icons.rounded.Campaign
+import androidx.compose.material.icons.rounded.CardGiftcard
+import androidx.compose.material.icons.rounded.Insights
+import androidx.compose.material.icons.rounded.Notifications
+import androidx.compose.material.icons.rounded.PhotoCamera
+import androidx.compose.ui.graphics.vector.ImageVector
+import com.chani.porumi.data.NotificationKind
+import com.chani.porumi.ui.components.IconBubble
 
 class NotificationsViewModel(private val repository: NotificationRepository) : ViewModel() {
 
@@ -99,10 +109,7 @@ private fun NotificationItem(item: AppNotification) {
     val colors = MaterialTheme.colorScheme
     ClickableCard(onClick = null) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Box(
-                Modifier.size(44.dp).background(colors.primaryContainer, CircleShape),
-                contentAlignment = Alignment.Center,
-            ) { Text(item.kind.emoji, fontSize = 20.sp) }
+            IconBubble(item.kind.icon, size = 44.dp)
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
@@ -131,10 +138,7 @@ private fun EmptyNotifications(error: String?) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically),
     ) {
-        Box(
-            Modifier.size(96.dp).background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
-            contentAlignment = Alignment.Center,
-        ) { Text("🔔", fontSize = 44.sp) }
+        IconBubble(Icons.Rounded.Notifications, size = 96.dp)
         Text("아직 받은 알림이 없어요", style = MaterialTheme.typography.titleLarge)
         Text(
             error ?: "기록 리마인더나 최근 7일 리포트 소식이\n오면 여기에 모아 둘게요.",
@@ -145,6 +149,15 @@ private fun EmptyNotifications(error: String?) {
         )
     }
 }
+
+private val NotificationKind.icon: ImageVector
+    get() = when (this) {
+        NotificationKind.REMINDER -> Icons.Rounded.PhotoCamera
+        NotificationKind.WEEKLY_REPORT -> Icons.Rounded.Insights
+        NotificationKind.ANALYSIS -> Icons.Rounded.AutoAwesome
+        NotificationKind.NOTICE -> Icons.Rounded.Campaign
+        NotificationKind.EVENT -> Icons.Rounded.CardGiftcard
+    }
 
 /** 방금 / N분 전 / N시간 전 / N일 전 / M월 D일 */
 private fun relativeTime(at: Instant): String {
