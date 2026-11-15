@@ -56,6 +56,10 @@ import com.chani.porumi.ui.components.PlainButton
 import com.chani.porumi.ui.theme.LocalPorumiColors
 import androidx.compose.material.icons.rounded.Insights
 import com.chani.porumi.ui.components.IconBubble
+import com.chani.porumi.domain.profileLine
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.todayIn
+import kotlin.time.Clock
 
 @Composable
 fun ReportScreen(
@@ -75,7 +79,7 @@ fun ReportScreen(
             pets = state.pets,
             selected = state.selectedPet,
             avatars = state.avatars,
-            subtitle = "${mood.weekStart.monthDay()} – ${mood.weekStart.plus(DatePeriod(days = 6)).monthDay()}",
+            subtitle = state.selectedPet?.let { pet -> pet.profileLine(Clock.System.todayIn(TimeZone.currentSystemDefault())) }.orEmpty(),
             onSelect = viewModel::selectPet,
             onAddPet = onAddPet,
         )
@@ -95,20 +99,17 @@ private fun PeriodNavigator(mood: WeeklyMood, periodsAgo: Int, onPrev: () -> Uni
     val end = mood.weekStart.plus(DatePeriod(days = 6))
     val isRecent = periodsAgo == 0
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-        PlainButton(onClick = onPrev, textStyle = MaterialTheme.typography.bodyMedium) {
-            Icon(Icons.Rounded.ChevronLeft, contentDescription = null)
-            Text("이전 7일")
+        PlainButton(onClick = onPrev) {
+            Icon(Icons.Rounded.ChevronLeft, contentDescription = "이전 7일")
         }
         Text(
-            if (isRecent) "최근 7일" else "${mood.weekStart.monthDay()} – ${end.monthDay()}",
-            style = MaterialTheme.typography.titleSmall,
-            fontWeight = FontWeight.SemiBold,
+            "${mood.weekStart.monthDay()} – ${end.monthDay()}",
+            style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.weight(1f),
             textAlign = androidx.compose.ui.text.style.TextAlign.Center,
         )
-        PlainButton(onClick = onNext, enabled = !isRecent, textStyle = MaterialTheme.typography.bodyMedium) {
-            Text("다음 7일")
-            Icon(Icons.Rounded.ChevronRight, contentDescription = null)
+        PlainButton(onClick = onNext, enabled = !isRecent) {
+            Icon(Icons.Rounded.ChevronRight, contentDescription = "다음 7일")
         }
     }
 }
