@@ -38,10 +38,12 @@ import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.chani.porumi.ui.components.Hairline
-import com.chani.porumi.ui.components.IosTopBar
-import com.chani.porumi.ui.theme.LocalIosColors
+import com.chani.porumi.ui.components.PorumiTopBar
+import com.chani.porumi.ui.theme.LocalPorumiColors
+import androidx.compose.ui.draw.shadow
+import androidx.compose.foundation.shape.CircleShape
 
-/** 설정 하위 화면 공통 틀: iOS 내비게이션 바(‹ 뒤로 + 제목) + 스크롤 영역 */
+/** 설정 하위 화면 공통 틀: 상단 바(뒤로 + 제목) + 스크롤 영역 */
 @Composable
 fun SettingsPage(
     title: String,
@@ -49,7 +51,7 @@ fun SettingsPage(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-        IosTopBar(title = title, onBack = onBack)
+        PorumiTopBar(title = title, onBack = onBack)
         Column(
             modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 24.dp),
             content = content,
@@ -57,31 +59,35 @@ fun SettingsPage(
     }
 }
 
-private val SectionShape = RoundedCornerShape(16.dp)
+private val SectionShape = RoundedCornerShape(24.dp)
 private val RowPadding = 16.dp
-private val IconTile = 29.dp
+private val IconTile = 34.dp
 private val IconGap = 14.dp
 
-/** 아이콘이 있는 행의 구분선은 글자 시작점부터 그린다 (iOS inset separator) */
+/** 아이콘이 있는 행의 구분선은 글자 시작점부터 그린다 */
 private val IconRowInset = RowPadding + IconTile + IconGap
 
 private data class SeparatorInset(val start: Dp)
 
-/** iOS inset-grouped 목록: 둥근 흰 카드 + 행 사이 들여쓴 구분선, 위에 작은 회색 머리글 */
+/** 묶음 목록: 둥근 흰 카드 + 행 사이 들여쓴 구분선, 위에 작은 머리글 */
 @Composable
 fun SettingsSection(title: String?, footer: String? = null, content: @Composable () -> Unit) {
     Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp)) {
         if (title != null) {
             Text(
                 title,
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(start = RowPadding, bottom = 6.dp),
+                modifier = Modifier.padding(start = RowPadding, bottom = 8.dp),
             )
         }
         GroupedColumn(
-            separatorColor = LocalIosColors.current.separator,
-            modifier = Modifier.fillMaxWidth().clip(SectionShape).background(MaterialTheme.colorScheme.surfaceContainer),
+            separatorColor = LocalPorumiColors.current.separator,
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(10.dp, SectionShape, ambientColor = LocalPorumiColors.current.cardShadow, spotColor = LocalPorumiColors.current.cardShadow)
+                .clip(SectionShape)
+                .background(MaterialTheme.colorScheme.surfaceContainer),
             content = content,
         )
         if (footer != null) {
@@ -134,8 +140,8 @@ private fun GroupedColumn(separatorColor: Color, modifier: Modifier, content: @C
 }
 
 /**
- * iOS 설정 앱 스타일 행: 색 타일 아이콘 + 제목(+부제목) + 오른쪽 값/셰브런/스위치.
- * [iconColor] 는 아이콘 타일 배경색 (SystemColors 사용 권장).
+ * 설정 행: 파스텔 동그라미 아이콘 + 제목(+부제목) + 오른쪽 값/셰브런/스위치.
+ * [iconColor] 는 아이콘 색 (배경은 이 색의 옅은 버전, Tints 사용 권장).
  */
 @Composable
 fun SettingsRow(
@@ -149,22 +155,22 @@ fun SettingsRow(
     iconColor: Color = MaterialTheme.colorScheme.primary,
     trailing: (@Composable () -> Unit)? = null,
 ) {
-    val ios = LocalIosColors.current
+    val ios = LocalPorumiColors.current
     Row(
         modifier = Modifier
             .layoutId(SeparatorInset(if (icon != null) IconRowInset else RowPadding))
             .fillMaxWidth()
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
-            .heightIn(min = 48.dp)
-            .padding(horizontal = RowPadding, vertical = 10.dp),
+            .heightIn(min = 56.dp)
+            .padding(horizontal = RowPadding, vertical = 11.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (icon != null) {
             Box(
-                Modifier.size(IconTile).clip(RoundedCornerShape(7.dp)).background(iconColor),
+                Modifier.size(IconTile).clip(CircleShape).background(iconColor.copy(alpha = 0.16f)),
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(19.dp))
+                Icon(icon, contentDescription = null, tint = iconColor, modifier = Modifier.size(19.dp))
             }
             Spacer(Modifier.width(IconGap))
         }

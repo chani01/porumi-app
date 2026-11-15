@@ -31,8 +31,8 @@ import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.foundation.layout.size
 import com.chani.porumi.ui.components.AlertAction
 import com.chani.porumi.ui.components.AlertActionStyle
-import com.chani.porumi.ui.components.IosAlertDialog
-import com.chani.porumi.ui.components.IosTextField
+import com.chani.porumi.ui.components.PorumiAlertDialog
+import com.chani.porumi.ui.components.PorumiTextField
 import com.chani.porumi.ui.components.PlainIconButton
 import com.chani.porumi.ui.components.PrimaryButton
 import com.chani.porumi.ui.components.SegmentedControl
@@ -115,7 +115,7 @@ fun PetManageScreen(
     }
 
     deleting?.let { pet ->
-        IosAlertDialog(
+        PorumiAlertDialog(
             onDismissRequest = { deleting = null },
             title = "${pet.name}을(를) 삭제할까요?",
             message = "지금까지의 분석 기록은 남지만, 아이별 모아보기에서는 빠져요.",
@@ -141,7 +141,7 @@ fun PetEditDialog(
 ) {
     var name by remember { mutableStateOf(initialName) }
     var species by remember { mutableStateOf(initialSpecies) }
-    IosAlertDialog(
+    PorumiAlertDialog(
         onDismissRequest = onDismiss,
         title = title,
         actions = listOf(
@@ -154,7 +154,7 @@ fun PetEditDialog(
             selectedIndex = Species.entries.indexOf(species),
             onSelect = { species = Species.entries[it] },
         )
-        IosTextField(
+        PorumiTextField(
             value = name,
             onValueChange = { if (it.length <= 30) name = it },
             placeholder = "이름",

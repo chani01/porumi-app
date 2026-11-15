@@ -12,13 +12,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.background
-import com.chani.porumi.ui.components.IosTopBar
+import com.chani.porumi.ui.components.PorumiTopBar
 
 /** 이용약관 / 개인정보 처리방침 전문 화면 (로그인 전·후 공용) */
 @Composable
 fun LegalScreen(doc: LegalDoc, onBack: () -> Unit) {
     Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-        IosTopBar(title = doc.title, onBack = onBack)
+        PorumiTopBar(title = doc.title, onBack = onBack)
         Column(
             modifier = Modifier
                 .fillMaxSize()

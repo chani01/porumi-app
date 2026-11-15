@@ -37,8 +37,8 @@ import com.chani.porumi.ui.components.ClickableCard
 import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.material.icons.automirrored.rounded.ArrowForwardIos
 import com.chani.porumi.ui.components.LargeTitle
-import com.chani.porumi.ui.theme.LocalIosColors
-import com.chani.porumi.ui.theme.SystemColors
+import com.chani.porumi.ui.theme.LocalPorumiColors
+import com.chani.porumi.ui.theme.Tints
 
 @Composable
 fun MyScreen(
@@ -71,7 +71,7 @@ fun MyScreen(
                 Icon(
                     Icons.AutoMirrored.Rounded.ArrowForwardIos,
                     contentDescription = null,
-                    tint = LocalIosColors.current.tertiaryLabel,
+                    tint = LocalPorumiColors.current.tertiaryLabel,
                     modifier = Modifier.size(14.dp),
                 )
             }
@@ -79,17 +79,17 @@ fun MyScreen(
 
         Spacer(Modifier.height(8.dp))
         SettingsSection("반려동물") {
-            SettingsRow("반려동물 관리", Icons.Outlined.Pets, onPets, trailingText = "${pets.size}명", iconColor = SystemColors.Orange)
+            SettingsRow("반려동물 관리", Icons.Outlined.Pets, onPets, trailingText = "${pets.size}명", iconColor = Tints.Orange)
         }
         SettingsSection("앱 설정") {
-            SettingsRow("알림 설정", Icons.Outlined.Notifications, onNotifications, iconColor = SystemColors.Red)
+            SettingsRow("알림 설정", Icons.Outlined.Notifications, onNotifications, iconColor = Tints.Red)
         }
         SettingsSection("지원") {
-            SettingsRow("고객센터", Icons.AutoMirrored.Outlined.HelpOutline, onSupport, iconColor = SystemColors.Blue)
-            SettingsRow(LegalDoc.TERMS.title, Icons.Outlined.Description, { onOpenLegal(LegalDoc.TERMS) }, iconColor = SystemColors.Gray)
-            SettingsRow(LegalDoc.PRIVACY.title, Icons.Outlined.PrivacyTip, { onOpenLegal(LegalDoc.PRIVACY) }, iconColor = SystemColors.Indigo)
-            SettingsRow("오픈소스 라이선스", Icons.Outlined.Code, onLicenses, iconColor = SystemColors.Gray)
-            SettingsRow("앱 버전", Icons.Outlined.Info, onClick = null, trailingText = AppInfo.VERSION, iconColor = SystemColors.Gray)
+            SettingsRow("고객센터", Icons.AutoMirrored.Outlined.HelpOutline, onSupport, iconColor = Tints.Blue)
+            SettingsRow(LegalDoc.TERMS.title, Icons.Outlined.Description, { onOpenLegal(LegalDoc.TERMS) }, iconColor = Tints.Gray)
+            SettingsRow(LegalDoc.PRIVACY.title, Icons.Outlined.PrivacyTip, { onOpenLegal(LegalDoc.PRIVACY) }, iconColor = Tints.Indigo)
+            SettingsRow("오픈소스 라이선스", Icons.Outlined.Code, onLicenses, iconColor = Tints.Gray)
+            SettingsRow("앱 버전", Icons.Outlined.Info, onClick = null, trailingText = AppInfo.VERSION, iconColor = Tints.Gray)
         }
     }
 

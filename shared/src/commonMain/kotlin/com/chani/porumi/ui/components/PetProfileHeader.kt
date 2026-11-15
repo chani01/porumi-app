@@ -39,7 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.chani.porumi.domain.Analysis
 import com.chani.porumi.domain.Pet
-import com.chani.porumi.ui.theme.LocalIosColors
+import com.chani.porumi.ui.theme.LocalPorumiColors
 
 private val HEADER_HEIGHT = 80.dp
 
@@ -143,7 +143,7 @@ fun PetProfileHeader(
                     },
                 )
             }
-            HorizontalDivider(thickness = Hairline, color = LocalIosColors.current.separator)
+            HorizontalDivider(thickness = Hairline, color = LocalPorumiColors.current.separator)
             DropdownMenuItem(
                 leadingIcon = {
                     Box(

@@ -44,8 +44,10 @@ import com.chani.porumi.ui.components.PetPhoto
 import com.chani.porumi.ui.components.korean
 import kotlinx.datetime.LocalDate
 import org.koin.compose.viewmodel.koinViewModel
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.RoundedCornerShape
 
-private const val GAP = 2
+private const val GAP = 6
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -110,7 +112,7 @@ fun HomeScreen(
                 item(key = "empty") { EmptyFeed(onAnalyzeClick) }
             } else {
                 items(rows, key = { row -> row.items.first().id }) { row ->
-                    FeedRowView(row, onPhotoClick)
+                    Box(Modifier.padding(horizontal = 16.dp)) { FeedRowView(row, onPhotoClick) }
                 }
             }
         }
@@ -158,7 +160,8 @@ fun WeekStripCard(
                                 .background(
                                     if (isToday) MaterialTheme.colorScheme.primaryContainer
                                     else MaterialTheme.colorScheme.surfaceVariant
-                                ),
+                                )
+                                .then(if (isToday) Modifier.border(2.dp, MaterialTheme.colorScheme.primary, CircleShape) else Modifier),
                         ) {
                             if (day.emotion != null) {
                                 Text(day.emotion.emoji, fontSize = 18.sp)
@@ -232,7 +235,7 @@ private fun SmallColumn(items: List<Analysis>, onClick: (String) -> Unit, modifi
 
 @Composable
 private fun FeedTile(item: Analysis, onClick: (String) -> Unit, modifier: Modifier) {
-    Box(modifier.clickable { onClick(item.id) }) {
+    Box(modifier.clip(RoundedCornerShape(16.dp)).clickable { onClick(item.id) }) {
         PetPhoto(item.imagePath, Modifier.fillMaxSize(), contentDescription = item.primaryEmotion.label)
         EmotionBadge(item.primaryEmotion, Modifier.align(Alignment.TopEnd).padding(6.dp))
     }

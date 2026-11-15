@@ -31,7 +31,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.material3.LocalContentColor
 import com.chani.porumi.ui.components.ActivityIndicator
 import com.chani.porumi.ui.components.CheckCircle
-import com.chani.porumi.ui.components.IosTextField
+import com.chani.porumi.ui.components.PorumiTextField
 import com.chani.porumi.ui.components.PlainButton
 import com.chani.porumi.ui.components.PrimaryButton
 
@@ -58,14 +58,14 @@ fun AuthScreen(viewModel: AuthViewModel = koinViewModel()) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 16.dp),
         )
-        IosTextField(
+        PorumiTextField(
             value = state.email,
             onValueChange = viewModel::onEmailChange,
             placeholder = "이메일",
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             modifier = Modifier.fillMaxWidth(),
         )
-        IosTextField(
+        PorumiTextField(
             value = state.password,
             onValueChange = viewModel::onPasswordChange,
             placeholder = "비밀번호 (6자 이상)",

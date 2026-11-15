@@ -29,7 +29,7 @@ import com.chani.porumi.ui.components.ClickableCard
 import androidx.compose.foundation.layout.size
 import com.chani.porumi.ui.components.Hairline
 import com.chani.porumi.ui.components.PrimaryButton
-import com.chani.porumi.ui.theme.LocalIosColors
+import com.chani.porumi.ui.theme.LocalPorumiColors
 
 private val faqs = listOf(
     "표정 분석은 얼마나 정확한가요?" to
@@ -86,7 +86,7 @@ fun SupportScreen(onBack: () -> Unit) {
                     Column {
                         faqs.forEachIndexed { i, (q, a) ->
                             FaqItem(q, a)
-                            if (i != faqs.lastIndex) HorizontalDivider(thickness = Hairline, color = LocalIosColors.current.separator)
+                            if (i != faqs.lastIndex) HorizontalDivider(thickness = Hairline, color = LocalPorumiColors.current.separator)
                         }
                     }
                 }
@@ -104,7 +104,7 @@ private fun FaqItem(question: String, answer: String) {
             Icon(
                 if (open) Icons.Rounded.ExpandLess else Icons.Rounded.ExpandMore,
                 contentDescription = null,
-                tint = LocalIosColors.current.tertiaryLabel,
+                tint = LocalPorumiColors.current.tertiaryLabel,
             )
         }
         AnimatedVisibility(open) {

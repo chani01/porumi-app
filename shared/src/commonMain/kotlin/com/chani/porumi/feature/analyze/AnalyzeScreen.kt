@@ -140,7 +140,7 @@ private fun PickContent(onGallery: () -> Unit, onCamera: () -> Unit) {
 @Composable
 private fun Preview(image: ByteArray, analyzing: Boolean) {
     Box(
-        Modifier.fillMaxWidth().aspectRatio(1f).clip(RoundedCornerShape(16.dp))
+        Modifier.fillMaxWidth().aspectRatio(1f).clip(RoundedCornerShape(24.dp))
             .background(MaterialTheme.colorScheme.surfaceVariant),
     ) {
         AsyncImage(

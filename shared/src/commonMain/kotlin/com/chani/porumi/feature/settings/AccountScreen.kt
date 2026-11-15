@@ -31,9 +31,9 @@ import com.chani.porumi.ui.components.ActivityIndicator
 import com.chani.porumi.ui.components.AlertAction
 import com.chani.porumi.ui.components.AlertActionStyle
 import com.chani.porumi.ui.components.CheckCircle
-import com.chani.porumi.ui.components.IosAlertDialog
-import com.chani.porumi.ui.components.IosTextField
-import com.chani.porumi.ui.theme.SystemColors
+import com.chani.porumi.ui.components.PorumiAlertDialog
+import com.chani.porumi.ui.components.PorumiTextField
+import com.chani.porumi.ui.theme.Tints
 
 private enum class AccountDialog { Password, SignOut, Delete }
 
@@ -45,11 +45,11 @@ fun AccountScreen(onBack: () -> Unit, viewModel: AccountViewModel = koinViewMode
 
     SettingsPage(title = "내 계정 설정", onBack = onBack) {
         SettingsSection("계정 정보") {
-            SettingsRow("이메일", Icons.Outlined.Email, onClick = null, subtitle = viewModel.email ?: "-", iconColor = SystemColors.Blue)
-            SettingsRow("비밀번호 변경", Icons.Outlined.Lock, { dialog = AccountDialog.Password }, iconColor = SystemColors.Gray)
+            SettingsRow("이메일", Icons.Outlined.Email, onClick = null, subtitle = viewModel.email ?: "-", iconColor = Tints.Blue)
+            SettingsRow("비밀번호 변경", Icons.Outlined.Lock, { dialog = AccountDialog.Password }, iconColor = Tints.Gray)
         }
         SettingsSection(null) {
-            SettingsRow("로그아웃", Icons.AutoMirrored.Outlined.Logout, { dialog = AccountDialog.SignOut }, iconColor = SystemColors.Orange)
+            SettingsRow("로그아웃", Icons.AutoMirrored.Outlined.Logout, { dialog = AccountDialog.SignOut }, iconColor = Tints.Orange)
         }
         SettingsSection(null) {
             SettingsRow(
@@ -57,7 +57,7 @@ fun AccountScreen(onBack: () -> Unit, viewModel: AccountViewModel = koinViewMode
                 Icons.Outlined.PersonRemove,
                 { dialog = AccountDialog.Delete },
                 titleColor = MaterialTheme.colorScheme.error,
-                iconColor = SystemColors.Red,
+                iconColor = Tints.Red,
             )
         }
 
@@ -76,7 +76,7 @@ fun AccountScreen(onBack: () -> Unit, viewModel: AccountViewModel = koinViewMode
                 dialog = null
             },
         )
-        AccountDialog.SignOut -> IosAlertDialog(
+        AccountDialog.SignOut -> PorumiAlertDialog(
             onDismissRequest = { dialog = null },
             title = "로그아웃할까요?",
             actions = listOf(
@@ -103,7 +103,7 @@ private fun PasswordDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
     var password by remember { mutableStateOf("") }
     var confirm by remember { mutableStateOf("") }
     val mismatch = confirm.isNotEmpty() && password != confirm
-    IosAlertDialog(
+    PorumiAlertDialog(
         onDismissRequest = onDismiss,
         title = "비밀번호 변경",
         message = "새 비밀번호를 6자 이상 입력해 주세요.",
@@ -112,14 +112,14 @@ private fun PasswordDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
             AlertAction("변경", enabled = password.length >= 6 && password == confirm) { onConfirm(password) },
         ),
     ) {
-        IosTextField(
+        PorumiTextField(
             value = password,
             onValueChange = { password = it },
             placeholder = "새 비밀번호",
             secure = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
         )
-        IosTextField(
+        PorumiTextField(
             value = confirm,
             onValueChange = { confirm = it },
             placeholder = "새 비밀번호 확인",
@@ -133,7 +133,7 @@ private fun PasswordDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
 @Composable
 private fun DeleteAccountDialog(onDismiss: () -> Unit, onConfirm: () -> Unit) {
     var agreed by remember { mutableStateOf(false) }
-    IosAlertDialog(
+    PorumiAlertDialog(
         onDismissRequest = onDismiss,
         title = "정말 탈퇴할까요?",
         message = "탈퇴하면 아래 정보가 모두 삭제되고 되돌릴 수 없어요.",

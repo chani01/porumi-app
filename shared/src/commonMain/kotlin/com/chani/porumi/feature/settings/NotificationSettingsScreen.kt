@@ -20,8 +20,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.padding
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.compose.viewmodel.koinViewModel
-import com.chani.porumi.ui.components.IosSwitch
-import com.chani.porumi.ui.theme.SystemColors
+import com.chani.porumi.ui.components.PorumiSwitch
+import com.chani.porumi.ui.theme.Tints
 
 /** 마이 > 알림 설정 */
 @Composable
@@ -34,11 +34,11 @@ fun NotificationSettingsScreen(onBack: () -> Unit, viewModel: NotificationSettin
             SettingsRow(
                 "기록 리마인더",
                 Icons.Outlined.PhotoCamera,
-                iconColor = SystemColors.Orange,
+                iconColor = Tints.Orange,
                 onClick = { viewModel.update { it.copy(dailyReminder = !it.dailyReminder) } },
                 subtitle = "매일 정해진 시간에 오늘의 표정을 남기도록 알려드려요",
                 trailing = {
-                    IosSwitch(checked = prefs.dailyReminder, onCheckedChange = { on -> viewModel.update { it.copy(dailyReminder = on) } })
+                    PorumiSwitch(checked = prefs.dailyReminder, onCheckedChange = { on -> viewModel.update { it.copy(dailyReminder = on) } })
                 },
             )
             if (prefs.dailyReminder) {
@@ -46,7 +46,7 @@ fun NotificationSettingsScreen(onBack: () -> Unit, viewModel: NotificationSettin
                     SettingsRow(
                         "알림 시간",
                         Icons.Outlined.Schedule,
-                        iconColor = SystemColors.Blue,
+                        iconColor = Tints.Blue,
                         onClick = { hourMenu = true },
                         trailingText = hourLabel(prefs.reminderHour),
                     )
@@ -68,11 +68,11 @@ fun NotificationSettingsScreen(onBack: () -> Unit, viewModel: NotificationSettin
             SettingsRow(
                 "주간 리포트 알림",
                 Icons.Outlined.Insights,
-                iconColor = SystemColors.Indigo,
+                iconColor = Tints.Indigo,
                 onClick = { viewModel.update { it.copy(weeklyReport = !it.weeklyReport) } },
                 subtitle = "최근 7일 기분 리포트가 준비되면 알려드려요",
                 trailing = {
-                    IosSwitch(checked = prefs.weeklyReport, onCheckedChange = { on -> viewModel.update { it.copy(weeklyReport = on) } })
+                    PorumiSwitch(checked = prefs.weeklyReport, onCheckedChange = { on -> viewModel.update { it.copy(weeklyReport = on) } })
                 },
             )
         }
@@ -80,11 +80,11 @@ fun NotificationSettingsScreen(onBack: () -> Unit, viewModel: NotificationSettin
             SettingsRow(
                 "이벤트·혜택 알림",
                 Icons.Outlined.Campaign,
-                iconColor = SystemColors.Pink,
+                iconColor = Tints.Pink,
                 onClick = { viewModel.update { it.copy(marketing = !it.marketing) } },
                 subtitle = "새 기능과 이벤트 소식을 받아요 (마케팅 정보 수신 동의)",
                 trailing = {
-                    IosSwitch(checked = prefs.marketing, onCheckedChange = { on -> viewModel.update { it.copy(marketing = on) } })
+                    PorumiSwitch(checked = prefs.marketing, onCheckedChange = { on -> viewModel.update { it.copy(marketing = on) } })
                 },
             )
         }
