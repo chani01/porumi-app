@@ -2,12 +2,17 @@ package com.chani.porumi.feature.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.chani.porumi.data.AnalysisRepository
 import com.chani.porumi.data.AuthRepository
 import com.chani.porumi.data.NotificationPrefs
 import com.chani.porumi.data.NotificationSettingsRepository
 import com.chani.porumi.data.PetRepository
 import com.chani.porumi.domain.Pet
+import com.chani.porumi.ui.components.latestPhotoByPet
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -16,9 +21,15 @@ import kotlinx.coroutines.launch
 class MyViewModel(
     authRepository: AuthRepository,
     petRepository: PetRepository,
+    analysisRepository: AnalysisRepository,
 ) : ViewModel() {
     val email: String? = authRepository.currentEmail
     val pets: StateFlow<List<Pet>> = petRepository.pets
+
+    /** 아이별 가장 최근 사진 (함께하는 친구들 카드의 프로필) */
+    val avatars: StateFlow<Map<String, String>> = analysisRepository.analyses
+        .map(::latestPhotoByPet)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
 }
 
 data class AccountUiState(

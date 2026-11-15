@@ -207,6 +207,7 @@ private fun MainScaffold() {
                 MyScreen(
                     onAccount = { navController.navigate(AccountRoute) },
                     onPets = { navController.navigate(PetManageRoute()) },
+                    onAddPet = { navController.navigate(PetManageRoute(openAdd = true)) },
                     onNotifications = { navController.navigate(NotificationRoute) },
                     onSupport = { navController.navigate(SupportRoute) },
                     onLicenses = { navController.navigate(LicensesRoute) },

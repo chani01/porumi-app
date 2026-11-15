@@ -37,7 +37,7 @@ import com.chani.porumi.ui.components.PlainIconButton
 import com.chani.porumi.ui.components.PrimaryButton
 import com.chani.porumi.ui.components.SegmentedControl
 
-/** 마이 > 반려동물 관리: 추가 / 이름·종 수정 / 삭제 (최소 한 명 유지) */
+/** 마이 > 함께하는 친구들: 추가 / 이름·종 수정 / 삭제 (최소 한 명 유지) */
 @Composable
 fun PetManageScreen(
     onBack: () -> Unit,
@@ -51,7 +51,7 @@ fun PetManageScreen(
     var editing by remember { mutableStateOf<Pet?>(null) }
     var deleting by remember { mutableStateOf<Pet?>(null) }
 
-    SettingsPage(title = "반려동물 관리", onBack = onBack) {
+    SettingsPage(title = "함께하는 친구들", onBack = onBack) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             pets.forEach { pet ->
                 ClickableCard(onClick = { editing = pet }) {
