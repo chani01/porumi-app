@@ -45,24 +45,19 @@ Almost all code lives in `shared/src/commonMain/kotlin/com/chani/porumi/`; `andr
 1. App compresses the photo (1280px JPEG) and uploads to Storage `pet-photos/{uid}/{uuid}.jpg`.
 2. App invokes Edge Function `analyze-photo` with `{ image_path, pet_id, taken_at }`.
 3. The function (`supabase/functions/analyze-photo/`: `analysis.ts` schema + pure logic, `handler.ts` HTTP/status-code contract with injected deps, `index.ts` wiring only) runs with the **user's JWT** (so RLS applies), downloads the image, calls Claude via `@anthropic-ai/sdk` with a Zod structured-output schema, normalizes scores, and inserts the row into `analyses`, returning it.
-4. Non-pet / face-not-visible photos return `422 { code: "NO_PET_FACE" }` and the uploaded file is deleted; refusals return `422 REFUSED`. `AnalysisRepository.analyze` maps HTTP status codes to Korean error messages.
+4. Non-pet / face-not-visible photos return `422 { code: "NO_PET_FACE" }` and the uploaded file is deleted; refusals return `422 REFUSED`. `AnalysisRepository.analyze` maps HTTP status codes to Korean error messages via `analysisErrorMessage` — keep it in sync with `analyze-photo/handler.ts` (both sides are tested).
 
 The emotion set (`HAPPY, RELAXED, EXCITED, CURIOUS, SLEEPY, ANXIOUS, ANNOYED`) is duplicated in the Edge Function schema, the DB, and `domain/Models.kt` — change all of them together.
 
 ### Backend
 
-- `supabase/migrations/` — `pets`, `analyses` tables with owner-only RLS policies, and the private `pet-photos` bucket whose policies require the first path segment to equal `auth.uid()`. Storage paths must keep the `{uid}/...` prefix.
-- `delete-account` function verifies the user token, then uses the service-role key (server-side only) to delete the user's Storage folder and the auth user; `pets`/`analyses` go via `ON DELETE CASCADE`.
-- Every function is split into `handler.ts` (logic, Supabase/Claude/fetch injected as deps, tested by `*_test.ts`) and a thin `index.ts` that wires real clients — keep new logic in `handler.ts` and cover it with tests. The analyze-photo status codes are mirrored by `analysisErrorMessage` in `Repositories.kt` (tested in commonTest).
-- `supabase/tests/rls_test.sql` asserts user A cannot read/modify/delete user B's rows and storage objects, and that every `public` table has RLS on. Add cases there for any new table or policy. Note: Supabase's default grants give `anon`/`authenticated` full table privileges, so column-level `grant` alone does not restrict — `revoke` first.
-- Both functions set `verify_jwt = false` in `supabase/config.toml` and verify the token themselves with `auth.getUser`. Function dependencies are pinned in each function's `deno.json`.
-- `naver-userinfo` is the `userinfo_url` of the custom OAuth provider `custom:naver`: it is called by Supabase Auth with a Naver access token (hence `verify_jwt = false`, no `auth.getUser`) and flattens Naver's `{ response: {...} }` profile into OIDC claims.
+- `supabase/migrations/` — `pets`, `analyses`, `notifications` with owner-only RLS, and the private `pet-photos` bucket whose policies require the first path segment to equal `auth.uid()` (Storage paths keep the `{uid}/...` prefix). `pets`/`analyses`/`notifications` cascade from `auth.users`.
+- Edge Functions: `analyze-photo` (user JWT, RLS applies), `delete-account` (verifies the user, then service-role server-side to delete Storage folder + auth user), `naver-userinfo` (OIDC userinfo proxy for `custom:naver`). Each is `handler.ts` (logic, deps injected, `*_test.ts`) + thin `index.ts`.
+- Detailed migration/RLS/function rules: `.claude/rules/supabase.md` (loaded when working under `supabase/`).
 
 ### Sign-in
 
-- Kakao / Naver / Apple / Google via `AuthRepository.signInWithSocial` (`data/SocialLogin.kt`); email+password stays as a secondary "이메일로 계속하기" path (also used for App Store review accounts).
-- OAuth uses PKCE and returns through the deep link `porumi://login-callback` (`AUTH_SCHEME`/`AUTH_HOST`). Android handles it in `MainActivity` (`singleTask`, `onNewIntent`) and iOS in `ContentView.swift` `onOpenURL`, both calling `handleAuthDeeplink`. Keep the scheme in sync across `SocialLogin.kt`, `AndroidManifest.xml`, `Info.plist` and the Supabase Redirect URLs.
-- Console/provider setup steps: `docs/social-login-setup.md`.
+- Kakao / Naver / Apple / Google via `AuthRepository.signInWithSocial` (`data/SocialLogin.kt`) plus email+password ("이메일로 계속하기", also for App Store review). OAuth (PKCE) returns through `porumi://login-callback`. Details: `.claude/rules/auth-deeplink.md`; console setup: `docs/social-login-setup.md`.
 
 ## Harness
 
@@ -72,6 +67,7 @@ The emotion set (`HAPPY, RELAXED, EXCITED, CURIOUS, SLEEPY, ANXIOUS, ANNOYED`) i
 - `.claude/hooks/stop-gate.sh` (Stop) runs `verify.sh` before a turn ends and blocks with the failures; it skips unchanged trees and gives up after 3 consecutive blocks. When it blocks, fix the cause — or, if the failure is outside the task, report it instead of working around it.
 - `.claude/hooks/post-edit.sh` (PostToolUse) gives instant feedback on the edited file: `deno check`/`lint` for Edge Functions (blocking), ktlint for Kotlin limited to the lines changed vs HEAD (report-only; existing code is not yet ktlint-clean, config in `.editorconfig`).
 - If a check's parsing breaks because code structure changed, update the script rather than bypassing it.
+- Workflows: `/verify`, `/new-feature`, `/new-migration`, `/change-emotion`, `/commit` (user-invoked only) in `.claude/skills/`; the `rls-reviewer` agent (`.claude/agents/`) independently reviews migration/policy/grant changes. UI rules: `.claude/rules/compose-ui.md`.
 
 ## Commit convention
 
