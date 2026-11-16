@@ -19,6 +19,7 @@ function setup(opts: {
   file?: { bytes: Uint8Array; type: string } | null;
   analyze?: () => Promise<AnalyzeResult>;
   insertError?: unknown;
+  referenced?: boolean;
 } = {}) {
   const calls: Calls = { removed: [], inserted: [], analyzed: 0 };
   const deps: Deps = {
@@ -30,6 +31,7 @@ function setup(opts: {
         calls.removed.push(p);
         return Promise.resolve();
       },
+      isReferenced: () => Promise.resolve(opts.referenced ?? false),
       insert: (row) => {
         calls.inserted.push(row);
         return Promise.resolve(opts.insertError ? { error: opts.insertError } : { row: { id: "a1", ...row } });
@@ -104,6 +106,7 @@ Deno.test("422 REFUSED: Claude 가 거절", async () => {
   assertEquals(status, 422);
   assertEquals(body.code, "REFUSED");
   assertEquals(calls.inserted.length, 0);
+  assertEquals(calls.removed, [PATH]);
 });
 
 Deno.test("502: 구조화 출력 파싱 실패", async () => {
@@ -162,4 +165,38 @@ Deno.test("200: 정규화된 행을 저장하고 그대로 반환", async () => 
 Deno.test("400: DB 저장 실패 (RLS 등)", async () => {
   const { handler } = setup({ insertError: { message: "rls" } });
   assertEquals((await quiet(() => call(handler, post()))).status, 400);
+});
+
+Deno.test("저장되지 않는 오류 결과(502·429·DB 실패·예외)에서도 업로드 파일 정리", async () => {
+  const cases: Parameters<typeof setup>[0][] = [
+    { analyze: () => Promise.resolve({ refused: false, output: null }) },
+    { analyze: () => Promise.reject(new Anthropic.RateLimitError(429, undefined, "rate", new Headers())) },
+    { analyze: () => Promise.reject(new Anthropic.InternalServerError(500, undefined, "boom", new Headers())) },
+    { insertError: { message: "rls" } },
+  ];
+  for (const opts of cases) {
+    const { handler, calls } = setup(opts);
+    await quiet(() => handler(post()));
+    assertEquals(calls.removed, [PATH]);
+  }
+  const { handler, calls } = setup({ analyze: () => Promise.reject(new TypeError("bug")) });
+  await assertRejects(() => handler(post()), TypeError);
+  assertEquals(calls.removed, [PATH]);
+});
+
+Deno.test("Storage 에 없거나 남의 경로면 삭제를 시도하지 않음", async () => {
+  for (const [opts, body] of [[{ file: null }, { image_path: PATH }], [{}, { image_path: "other/a.jpg" }]] as const) {
+    const { handler, calls } = setup(opts);
+    await handler(post(body));
+    assertEquals(calls.removed, []);
+  }
+});
+
+Deno.test("같은 경로의 기록이 이미 저장돼 있으면 실패해도 사진을 지우지 않음", async () => {
+  const { handler, calls } = setup({
+    referenced: true,
+    analyze: () => Promise.resolve({ refused: false, output: null }),
+  });
+  assertEquals((await handler(post())).status, 502);
+  assertEquals(calls.removed, []);
 });

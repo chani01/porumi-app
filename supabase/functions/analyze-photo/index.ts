@@ -36,6 +36,11 @@ Deno.serve(createHandler({
       async remove(path) {
         await supabase.storage.from(BUCKET).remove([path]);
       },
+      async isReferenced(path) {
+        const { data, error } = await supabase.from("analyses").select("id").eq("image_path", path).limit(1);
+        // 확인에 실패하면 지우지 않는 쪽으로 (고아 파일은 탈퇴 시 정리됨)
+        return error ? true : (data?.length ?? 0) > 0;
+      },
       async insert(row) {
         const { data, error } = await supabase.from("analyses").insert(row).select().single();
         return error ? { error } : { row: data };

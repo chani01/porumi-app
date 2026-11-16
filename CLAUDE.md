@@ -45,7 +45,7 @@ Almost all code lives in `shared/src/commonMain/kotlin/com/chani/porumi/`; `andr
 1. App compresses the photo (1280px JPEG) and uploads to Storage `pet-photos/{uid}/{uuid}.jpg`.
 2. App invokes Edge Function `analyze-photo` with `{ image_path, pet_id, taken_at }`.
 3. The function (`supabase/functions/analyze-photo/`: `analysis.ts` schema + pure logic, `handler.ts` HTTP/status-code contract with injected deps, `index.ts` wiring only) runs with the **user's JWT** (so RLS applies), downloads the image, calls Claude via `@anthropic-ai/sdk` with a Zod structured-output schema, normalizes scores, and inserts the row into `analyses`, returning it.
-4. Non-pet / face-not-visible photos return `422 { code: "NO_PET_FACE" }` and the uploaded file is deleted; refusals return `422 REFUSED`. `AnalysisRepository.analyze` maps HTTP status codes to Korean error messages via `analysisErrorMessage` — keep it in sync with `analyze-photo/handler.ts` (both sides are tested).
+4. Non-pet / face-not-visible photos return `422 { code: "NO_PET_FACE" }`, refusals `422 REFUSED`; whenever no row is saved (those, 429/502, insert failure) the uploaded file is deleted. `AnalysisRepository.analyze` maps HTTP status codes to Korean error messages via `analysisErrorMessage` — keep it in sync with `analyze-photo/handler.ts` (both sides are tested).
 
 The emotion set (`HAPPY, RELAXED, EXCITED, CURIOUS, SLEEPY, ANXIOUS, ANNOYED`) is duplicated in the Edge Function schema, the DB, and `domain/Models.kt` — change all of them together.
 
