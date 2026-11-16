@@ -1,0 +1,58 @@
+# 하네스 검증을 CI 에서도 실행한다 (scripts/harness/verify.sh --all).
+# 로컬 훅을 건너뛴 커밋, 사람이 직접 한 커밋도 같은 기준으로 확인한다.
+# iOS 컴파일은 macOS 에서만 돌기 때문에 여기서는 생략된다 (verify.sh 가 uname 으로 판단).
+name: verify
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: "21"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: "2.9.8"
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: "2.98.2"
+
+      # pgTAP RLS 테스트와 db lint 에 필요한 Postgres 만 띄운다
+      - name: Start local Supabase (Postgres only)
+        run: >
+          supabase start
+          -x gotrue,realtime,storage-api,imgproxy,kong,mailpit,postgrest,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+          --ignore-health-check
+
+      # local.properties 는 커밋하지 않는다. 값이 비어 있으면 AppConfig 가 빈 값으로 생성되어 빌드·테스트는 된다.
+      - name: Verify
+        run: scripts/harness/verify.sh --all
+
+      - name: Upload harness logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: harness-logs
+          path: |
+            build/harness/
+            shared/build/reports/tests/

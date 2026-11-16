@@ -54,7 +54,7 @@ else
     || fail "AndroidManifest.xml 에 android:scheme=\"$kt_scheme\" 없음 (AUTH_SCHEME 과 불일치)"
   grep -qE "android:host=\"$kt_host\"" "$MANIFEST" \
     || fail "AndroidManifest.xml 에 android:host=\"$kt_host\" 없음 (AUTH_HOST 와 불일치)"
-  awk '/CFBundleURLSchemes/{f=1} f' "$PLIST" | grep -qE "<string>$kt_scheme</string>" \
+  grep -qE "<string>$kt_scheme</string>" <<<"$(awk '/CFBundleURLSchemes/{f=1} f' "$PLIST")" \
     || fail "Info.plist CFBundleURLSchemes 에 \"$kt_scheme\" 없음 (AUTH_SCHEME 과 불일치)"
 fi
 

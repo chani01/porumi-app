@@ -67,7 +67,9 @@ The emotion set (`HAPPY, RELAXED, EXCITED, CURIOUS, SLEEPY, ANXIOUS, ANNOYED`) i
 - `.claude/hooks/stop-gate.sh` (Stop) runs `verify.sh` before a turn ends and blocks with the failures; it skips unchanged trees and gives up after 3 consecutive blocks. When it blocks, fix the cause — or, if the failure is outside the task, report it instead of working around it.
 - `.claude/hooks/post-edit.sh` (PostToolUse) gives instant feedback on the edited file: `deno check`/`lint` for Edge Functions (blocking), ktlint for Kotlin limited to the lines changed vs HEAD (report-only; existing code is not yet ktlint-clean, config in `.editorconfig`).
 - If a check's parsing breaks because code structure changed, update the script rather than bypassing it.
-- Workflows: `/verify`, `/new-feature`, `/new-migration`, `/change-emotion`, `/commit` (user-invoked only) in `.claude/skills/`; the `rls-reviewer` agent (`.claude/agents/`) independently reviews migration/policy/grant changes. UI rules: `.claude/rules/compose-ui.md`.
+- `scripts/harness/run-ios.sh [simulator] [wait]` — builds for the iOS simulator, installs, launches, captures app error logs and `build/harness/ios-screen.png`; fails on build error or crash. Look at the screenshot after UI changes (`/run-ios`).
+- CI: `.github/workflows/verify.yml` runs `verify.sh --all` on push to main and PRs (Ubuntu, Postgres-only local Supabase; iOS compile skipped there).
+- Workflows: `/verify`, `/run-ios`, `/new-feature`, `/new-migration`, `/change-emotion`, `/commit` (user-invoked only) in `.claude/skills/`; the `rls-reviewer` agent (`.claude/agents/`) independently reviews migration/policy/grant changes. UI rules: `.claude/rules/compose-ui.md`.
 
 ## Commit convention
 
