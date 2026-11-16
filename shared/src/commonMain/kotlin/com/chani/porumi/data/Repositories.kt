@@ -181,14 +181,7 @@ class AnalysisRepository internal constructor(private val supabase: SupabaseClie
                 ),
             )
         } catch (e: RestException) {
-            throw AnalysisException(
-                when (e.statusCode) {
-                    422 -> "강아지나 고양이의 얼굴이 잘 보이는 사진으로 다시 시도해 주세요."
-                    429 -> "요청이 많아요. 잠시 후 다시 시도해 주세요."
-                    401 -> "로그인이 만료됐어요. 다시 로그인해 주세요."
-                    else -> "분석 중 문제가 생겼어요. (${e.statusCode})"
-                }
-            )
+            throw AnalysisException(analysisErrorMessage(e.statusCode))
         }
 
         val analysis = json.decodeFromString<AnalysisDto>(response.bodyAsText()).toDomain()
@@ -220,4 +213,15 @@ class AnalysisRepository internal constructor(private val supabase: SupabaseClie
     private companion object {
         const val FEED_LIMIT = 500L
     }
+}
+
+/**
+ * analyze-photo 응답 상태 코드 → 사용자 메시지.
+ * 상태 코드 계약은 supabase/functions/analyze-photo/handler.ts 와 같아야 한다.
+ */
+internal fun analysisErrorMessage(statusCode: Int): String = when (statusCode) {
+    422 -> "강아지나 고양이의 얼굴이 잘 보이는 사진으로 다시 시도해 주세요."
+    429 -> "요청이 많아요. 잠시 후 다시 시도해 주세요."
+    401 -> "로그인이 만료됐어요. 다시 로그인해 주세요."
+    else -> "분석 중 문제가 생겼어요. ($statusCode)"
 }

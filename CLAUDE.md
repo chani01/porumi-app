@@ -11,6 +11,9 @@ Porumi is a Kotlin Multiplatform + Compose Multiplatform app (Android / iOS) tha
 ./gradlew :shared:testAndroidHostTest        # unit tests (commonTest + androidHostTest) on JVM
 ./gradlew :shared:testAndroidHostTest --tests "com.chani.porumi.domain.WeeklyMoodCalculatorTest"   # single test class
 ./gradlew :shared:iosSimulatorArm64Test      # run commonTest on iOS simulator
+(cd supabase/functions/analyze-photo && deno test --no-lock)   # Edge Function tests (each function dir)
+supabase test db                             # pgTAP RLS tests in supabase/tests/ (needs local Supabase)
+scripts/harness/verify.sh [--all]            # everything relevant to the current diff
 ```
 
 - iOS: open `iosApp/` in Xcode and run (it links the static `Shared` framework built from `:shared`).
@@ -18,6 +21,8 @@ Porumi is a Kotlin Multiplatform + Compose Multiplatform app (Android / iOS) tha
   - `supabase db push` — apply `supabase/migrations/`
   - `supabase functions deploy analyze-photo` / `supabase functions deploy delete-account`
   - `supabase secrets set ANTHROPIC_API_KEY=...` — required by `analyze-photo`
+  - Local stack for tests (if port 54321 is taken, e.g. by CleanMyMac, start only Postgres — enough for `test db`/`db lint`):
+    `supabase start -x gotrue,realtime,storage-api,imgproxy,kong,mailpit,postgrest,postgres-meta,studio,edge-runtime,logflare,vector,supavisor --ignore-health-check`
 
 ## Configuration
 
@@ -39,7 +44,7 @@ Almost all code lives in `shared/src/commonMain/kotlin/com/chani/porumi/`; `andr
 
 1. App compresses the photo (1280px JPEG) and uploads to Storage `pet-photos/{uid}/{uuid}.jpg`.
 2. App invokes Edge Function `analyze-photo` with `{ image_path, pet_id, taken_at }`.
-3. The function (`supabase/functions/analyze-photo/index.ts`) runs with the **user's JWT** (so RLS applies), downloads the image, calls Claude via `@anthropic-ai/sdk` with a Zod structured-output schema, normalizes scores, and inserts the row into `analyses`, returning it.
+3. The function (`supabase/functions/analyze-photo/`: `analysis.ts` schema + pure logic, `handler.ts` HTTP/status-code contract with injected deps, `index.ts` wiring only) runs with the **user's JWT** (so RLS applies), downloads the image, calls Claude via `@anthropic-ai/sdk` with a Zod structured-output schema, normalizes scores, and inserts the row into `analyses`, returning it.
 4. Non-pet / face-not-visible photos return `422 { code: "NO_PET_FACE" }` and the uploaded file is deleted; refusals return `422 REFUSED`. `AnalysisRepository.analyze` maps HTTP status codes to Korean error messages.
 
 The emotion set (`HAPPY, RELAXED, EXCITED, CURIOUS, SLEEPY, ANXIOUS, ANNOYED`) is duplicated in the Edge Function schema, the DB, and `domain/Models.kt` — change all of them together.
@@ -48,6 +53,8 @@ The emotion set (`HAPPY, RELAXED, EXCITED, CURIOUS, SLEEPY, ANXIOUS, ANNOYED`) i
 
 - `supabase/migrations/` — `pets`, `analyses` tables with owner-only RLS policies, and the private `pet-photos` bucket whose policies require the first path segment to equal `auth.uid()`. Storage paths must keep the `{uid}/...` prefix.
 - `delete-account` function verifies the user token, then uses the service-role key (server-side only) to delete the user's Storage folder and the auth user; `pets`/`analyses` go via `ON DELETE CASCADE`.
+- Every function is split into `handler.ts` (logic, Supabase/Claude/fetch injected as deps, tested by `*_test.ts`) and a thin `index.ts` that wires real clients — keep new logic in `handler.ts` and cover it with tests. The analyze-photo status codes are mirrored by `analysisErrorMessage` in `Repositories.kt` (tested in commonTest).
+- `supabase/tests/rls_test.sql` asserts user A cannot read/modify/delete user B's rows and storage objects, and that every `public` table has RLS on. Add cases there for any new table or policy. Note: Supabase's default grants give `anon`/`authenticated` full table privileges, so column-level `grant` alone does not restrict — `revoke` first.
 - Both functions set `verify_jwt = false` in `supabase/config.toml` and verify the token themselves with `auth.getUser`. Function dependencies are pinned in each function's `deno.json`.
 - `naver-userinfo` is the `userinfo_url` of the custom OAuth provider `custom:naver`: it is called by Supabase Auth with a Naver access token (hence `verify_jwt = false`, no `auth.getUser`) and flattens Naver's `{ response: {...} }` profile into OIDC claims.
 

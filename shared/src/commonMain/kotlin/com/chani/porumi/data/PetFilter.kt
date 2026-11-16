@@ -12,9 +12,7 @@ import kotlinx.coroutines.flow.combine
 class PetFilter(petRepository: PetRepository) {
     private val selectedPetId = MutableStateFlow<String?>(null)
 
-    val selectedPet: Flow<Pet?> = combine(petRepository.pets, selectedPetId) { pets, id ->
-        pets.firstOrNull { it.id == id } ?: pets.firstOrNull()
-    }
+    val selectedPet: Flow<Pet?> = combine(petRepository.pets, selectedPetId, ::resolveSelectedPet)
 
     fun select(petId: String) {
         selectedPetId.value = petId
@@ -24,3 +22,7 @@ class PetFilter(petRepository: PetRepository) {
         selectedPetId.value = null
     }
 }
+
+/** 선택한 아이가 목록에 있으면 그 아이, 없으면(미선택·삭제됨) 첫 번째 아이, 목록이 비면 null */
+internal fun resolveSelectedPet(pets: List<Pet>, selectedId: String?): Pet? =
+    pets.firstOrNull { it.id == selectedId } ?: pets.firstOrNull()

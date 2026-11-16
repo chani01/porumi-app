@@ -12,7 +12,7 @@ MODELS=$SRC/domain/Models.kt
 KOIN=$SRC/di/Koin.kt
 MAIN_VM=$SRC/feature/MainViewModel.kt
 SOCIAL=$SRC/data/SocialLogin.kt
-ANALYZE_FN=supabase/functions/analyze-photo/index.ts
+ANALYZE_FN=supabase/functions/analyze-photo/analysis.ts
 MANIFEST=androidApp/src/main/AndroidManifest.xml
 PLIST=iosApp/iosApp/Info.plist
 
@@ -25,7 +25,7 @@ join() { tr '\n' ' ' | sed 's/ $//'; }
 # ── 1. 감정 7종: Kotlin enum = Edge Function(EMOTIONS, scores) = DB CHECK ──────────
 kt_emotions=$(awk '/enum class Emotion/{f=1;next} f{print} f&&/;/{exit}' "$MODELS" \
   | grep -oE '^[[:space:]]*[A-Z_]+\(' | tr -d ' (\t' | join)
-fn_emotions=$(grep -E '^const EMOTIONS' "$ANALYZE_FN" | grep -oE '"[A-Z_]+"' | tr -d '"' | join)
+fn_emotions=$(grep -E '^(export )?const EMOTIONS' "$ANALYZE_FN" | grep -oE '"[A-Z_]+"' | tr -d '"' | join)
 fn_scores=$(awk '/scores: z\.object\(\{/{f=1;next} f&&/\}\)/{exit} f' "$ANALYZE_FN" \
   | grep -oE '^[[:space:]]*[A-Z_]+:' | tr -d ' :\t' | join)
 # 가장 최근에 primary_emotion 제약을 정의한 마이그레이션 기준

@@ -58,7 +58,7 @@ if command -v deno >/dev/null; then
     [ -f "$fn/index.ts" ] || continue
     name=$(basename "$fn")
     run "deno check $name" "$LOG_DIR/deno-check-$name.log" bash -c "cd '$fn' && deno check --no-lock index.ts"
-    run "deno lint $name"  "$LOG_DIR/deno-lint-$name.log"  bash -c "cd '$fn' && deno lint index.ts"
+    run "deno lint $name"  "$LOG_DIR/deno-lint-$name.log"  bash -c "cd '$fn' && deno lint"
     if ls "$fn"/*_test.ts >/dev/null 2>&1; then
       run "deno test $name" "$LOG_DIR/deno-test-$name.log" bash -c "cd '$fn' && deno test --no-lock --allow-env --allow-read"
     fi
