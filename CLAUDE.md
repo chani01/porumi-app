@@ -57,6 +57,12 @@ The emotion set (`HAPPY, RELAXED, EXCITED, CURIOUS, SLEEPY, ANXIOUS, ANNOYED`) i
 - OAuth uses PKCE and returns through the deep link `porumi://login-callback` (`AUTH_SCHEME`/`AUTH_HOST`). Android handles it in `MainActivity` (`singleTask`, `onNewIntent`) and iOS in `ContentView.swift` `onOpenURL`, both calling `handleAuthDeeplink`. Keep the scheme in sync across `SocialLogin.kt`, `AndroidManifest.xml`, `Info.plist` and the Supabase Redirect URLs.
 - Console/provider setup steps: `docs/social-login-setup.md`.
 
+## Harness
+
+- `scripts/harness/check-invariants.sh` — machine-checks the "change together" rules above: emotion set (Models.kt = analyze-photo `EMOTIONS`/`scores` = latest DB CHECK), deep-link scheme/host (SocialLogin.kt = AndroidManifest = Info.plist), every `*ViewModel` registered in Koin, every stateful `data/` class has `clear()` called on sign-out in `MainViewModel` (opt out with a `harness:keep-on-signout` comment), and no `service_role` in client code. Runs from `.githooks/pre-commit`; run it after touching any of these.
+- `.claude/hooks/guard.sh` (PreToolUse) blocks git push/merge/rebase/cherry-pick, branch/worktree creation, `reset --hard`, edits to `local.properties`, and `service_role` in client code; editing an already-committed migration asks the user. Supabase deploy/push/secrets commands require confirmation (`.claude/settings.json`).
+- If a check's parsing breaks because code structure changed, update the script rather than bypassing it.
+
 ## Commit convention
 
 Commit messages are written in **Korean**. Format the subject as `<type>: <한국어 요약>` (optional scope: `feat(report): ...`).

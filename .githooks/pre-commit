@@ -1,0 +1,3 @@
+#!/bin/sh
+# 커밋 전 Porumi 불변식 검사 (감정 목록·딥링크·Koin 등록·로그아웃 초기화·service_role)
+exec "$(git rev-parse --show-toplevel)/scripts/harness/check-invariants.sh"

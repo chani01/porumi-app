@@ -20,6 +20,7 @@ data class NotificationPrefs(
 
 /**
  * 알림 설정을 기기에 저장한다 (Android SharedPreferences / iOS NSUserDefaults).
+ * 기기 설정이라 로그아웃해도 유지한다 (harness:keep-on-signout).
  * 실제 알림 발송(로컬 알림 예약 또는 푸시)은 아직 연결되지 않았다.
  */
 class NotificationSettingsRepository(private val settings: Settings = Settings()) {
