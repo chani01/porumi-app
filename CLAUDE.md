@@ -51,7 +51,7 @@ The emotion set (`HAPPY, RELAXED, EXCITED, CURIOUS, SLEEPY, ANXIOUS, ANNOYED`) i
 
 ### Backend
 
-- `supabase/migrations/` — `pets`, `analyses`, `notifications` with owner-only RLS, and the private `pet-photos` bucket whose policies require the first path segment to equal `auth.uid()` (Storage paths keep the `{uid}/...` prefix). `pets`/`analyses`/`notifications` cascade from `auth.users`.
+- `supabase/migrations/` — `pets`, `analyses`, `notifications` with owner-only RLS; default Supabase grants are trimmed (`anon` has no table access, app may update only `analyses.note` and `notifications.read_at`, `analyses.image_path` must start with the owner's uid, uploads are one level deep `{uid}/{file}`), and the private `pet-photos` bucket whose policies require the first path segment to equal `auth.uid()` (Storage paths keep the `{uid}/...` prefix). `pets`/`analyses`/`notifications` cascade from `auth.users`.
 - Edge Functions: `analyze-photo` (user JWT, RLS applies), `delete-account` (verifies the user, then service-role server-side to delete Storage folder + auth user), `naver-userinfo` (OIDC userinfo proxy for `custom:naver`). Each is `handler.ts` (logic, deps injected, `*_test.ts`) + thin `index.ts`.
 - Detailed migration/RLS/function rules: `.claude/rules/supabase.md` (loaded when working under `supabase/`).
 
